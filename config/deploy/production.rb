@@ -60,41 +60,24 @@
 #     # password: "please use keys"
 #   }
 
-# Production server configuration
-server "54.224.57.91", 
-  user: "ec2-user", 
-  roles: %w{web app db}, 
-  ssh_options: {
-    keys: %w(student-app-ec2.pem),
-    forward_agent: true,
-    auth_methods: %w(publickey),
-    verify_host_key: :never
-  }
-
-# Production specific settings
+# Configure the deployment environment
 set :rails_env, 'production'
+set :stage, :production
+
+# Configure the server
+server '54.224.57.91', roles: %w{web app db}
+
+# Configure deployment settings
 set :branch, 'main'
-set :deploy_to, "/home/ec2-user/student_management"
+set :deploy_to, '/var/www/NCI-Student-Management-Systems'
 
-# Enable delayed job if using it
-# set :delayed_job_workers, 2
+# Disable SSH key verification
+set :ssh_options, {
+  verify_host_key: :never
+}
 
-# Configure the deployment branch
-set :deploy_ref, 'origin/main'
-
-# Configure asset precompilation
+# Enable asset compilation
 set :assets_roles, [:web, :app]
 
-# Configure database
+# Database configuration
 set :migration_role, :db
-set :migration_servers, -> { primary(fetch(:migration_role)) }
-
-# Configure the deployment user
-set :user, 'ec2-user' 
-
-# Configure SSH options
-set :ssh_options, {
-  keys: %w(~/.ssh/your_key.pem), 
-  forward_agent: false,
-  auth_methods: %w(publickey)
-}

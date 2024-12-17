@@ -1350,3 +1350,62 @@ Processing by StudentsController#index as HTML
 Completed 200 OK in 318ms (Views: 9.4ms | ActiveRecord: 0.6ms (1 query, 0 cached) | GC: 0.0ms)
 
 
+Started GET "/" for ::1 at 2024-12-17 13:58:48 +0000
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='CloudApppnci'*/[0m
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (1.0ms)[0m  [1m[34mSELECT "students".* FROM "students" /*action='index',application='CloudApppnci',controller='students'*/[0m
+  ↳ app/views/students/index.html.erb:30
+  Rendered students/index.html.erb within layouts/application (Duration: 14.0ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 25.0ms | GC: 0.0ms)
+Completed 200 OK in 641ms (Views: 30.4ms | ActiveRecord: 1.3ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/students/7" for ::1 at 2024-12-17 13:58:53 +0000
+Processing by StudentsController#show as HTML
+  Parameters: {"id"=>"7"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = 7 LIMIT 1 /*action='show',application='CloudApppnci',controller='students'*/[0m
+  ↳ app/controllers/students_controller.rb:59:in `set_student'
+  Rendering layout layouts/application.html.erb
+  Rendering students/show.html.erb within layouts/application
+  Rendered students/show.html.erb within layouts/application (Duration: 0.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 200 OK in 292ms (Views: 1.2ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/students" for ::1 at 2024-12-17 13:58:54 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" /*action='index',application='CloudApppnci',controller='students'*/[0m
+  ↳ app/views/students/index.html.erb:30
+  Rendered students/index.html.erb within layouts/application (Duration: 3.0ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 3.3ms | GC: 0.0ms)
+Completed 200 OK in 302ms (Views: 3.5ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/students/7/edit" for ::1 at 2024-12-17 13:58:55 +0000
+Processing by StudentsController#edit as HTML
+  Parameters: {"id"=>"7"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = 7 LIMIT 1 /*action='edit',application='CloudApppnci',controller='students'*/[0m
+  ↳ app/controllers/students_controller.rb:59:in `set_student'
+  Rendering layout layouts/application.html.erb
+  Rendering students/edit.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 9.1ms | GC: 0.0ms)
+  Rendered students/edit.html.erb within layouts/application (Duration: 11.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 11.4ms | GC: 0.0ms)
+Completed 200 OK in 300ms (Views: 11.6ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/students" for ::1 at 2024-12-17 13:58:56 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.2ms)[0m  [1m[34mSELECT "students".* FROM "students" /*action='index',application='CloudApppnci',controller='students'*/[0m
+  ↳ app/views/students/index.html.erb:30
+  Rendered students/index.html.erb within layouts/application (Duration: 13.0ms | GC: 0.2ms)
+  Rendered layout layouts/application.html.erb (Duration: 13.4ms | GC: 0.2ms)
+Completed 200 OK in 307ms (Views: 13.5ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.2ms)
+
+

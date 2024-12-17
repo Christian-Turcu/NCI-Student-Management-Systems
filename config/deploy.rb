@@ -2,7 +2,7 @@
 lock "~> 3.19.2"
 
 set :application, "student_management"
-set :repo_url, "https://github.com/Christian-Turcu/NCI-Student-Management-System.git"
+set :repo_url, "https://github.com/Christian-Turcu/NCI-Student-Management-Systems.git"
 
 # Default branch is :master
 set :branch, 'main'
@@ -23,7 +23,7 @@ set :pty, true
 append :linked_files, "config/database.yml", "config/master.key"
 
 # Default value for linked_dirs is []
-append :linked_dirs, 'log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', '.bundle', 'public/system', 'public/uploads', 'storage'
+append :linked_dirs, 'log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', '.bundle', 'public/system', 'public/uploads', 'public/packs', 'node_modules'
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -75,21 +75,25 @@ namespace :deploy do
     end
   end
 
-  before 'deploy:check', 'deploy:install_dependencies'
-  before 'deploy:starting', 'deploy:create_directories'
-  before 'deploy:starting', 'deploy:setup_nginx'
-
-  # Copy database.yml during deployment
-  before 'deploy:check:linked_files', :copy_database_yml do
+  desc 'Copy database.yml to the shared directory'
+  task :copy_database_yml do
     on roles(:app) do
+      execute "mkdir -p #{shared_path}/config"
       upload! 'config/database.production.yml', "#{shared_path}/config/database.yml"
     end
   end
 
-  # Copy master.key during deployment
-  before 'deploy:check:linked_files', :copy_master_key do
+  desc 'Copy master.key to the shared directory'
+  task :copy_master_key do
     on roles(:app) do
+      execute "mkdir -p #{shared_path}/config"
       upload! 'config/master.key', "#{shared_path}/config/master.key"
     end
   end
+
+  before 'deploy:check', 'deploy:install_dependencies'
+  before 'deploy:starting', 'deploy:create_directories'
+  before 'deploy:starting', 'deploy:setup_nginx'
+  before 'deploy:check:linked_files', 'deploy:copy_database_yml'
+  before 'deploy:check:linked_files', 'deploy:copy_master_key'
 end
