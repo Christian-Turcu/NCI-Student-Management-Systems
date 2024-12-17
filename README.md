@@ -1,15 +1,15 @@
-# Information Management System
+# NCI Management System
 
 A Ruby on Rails application for managing records with SQLite database and AWS EC2 deployment capabilities.
 
-## Requirements
+## What I used
 
 - Ruby 3.3.6
 - Rails 7.1.0
 - SQLite3
 - AWS Account for EC2 deployment
 
-## Setup
+## Instructions to launch 
 
 1. Clone the repository
 2. Install dependencies:
