@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>National College of Ireland Student Management System</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <style>
+      .header-purple {
+        background-color: #800080;
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+      }
+      .btn-purple {
+        background-color: #800080;
+        color: white !important;
+      }
+      .btn-purple:hover {
+        background-color: #660066;
+        color: white !important;
+      }
+      .d-inline {
+        display: inline-block !important;
+        margin: 0 !important;
+      }
+      .d-inline .btn {
+        margin: 0 !important;
+      }
+    </style>
+    <%= yield :styles %>
+  </head>
+
+  <body>
+    <header class="header-purple">
+      <div class="container">
+        <h2 class="m-0">National College of Ireland Student Management System</h2>
+      </div>
+    </header>
+
+    <div class="container">
+      <% if notice %>
+        <div class="alert alert-success"><%= notice %></div>
+      <% end %>
+      
+      <%= yield %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

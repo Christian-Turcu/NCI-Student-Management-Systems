@@ -1,0 +1,31 @@
+<%= form_with(model: record, class: "needs-validation") do |form| %>
+  <% if record.errors.any? %>
+    <div class="alert alert-danger">
+      <h2><%= pluralize(record.errors.count, "error") %> prohibited this record from being saved:</h2>
+      <ul>
+        <% record.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :title, class: "form-label" %>
+    <%= form.text_field :title, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :description, class: "form-label" %>
+    <%= form.text_area :description, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :status, class: "form-label" %>
+    <%= form.select :status, ['active', 'inactive', 'pending'], { include_blank: true }, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.submit class: "btn btn-primary" %>
+  </div>
+<% end %>

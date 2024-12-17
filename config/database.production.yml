@@ -1,0 +1,11 @@
+production:
+  primary:
+    adapter: sqlite3
+    pool: 5
+    timeout: 5000
+    database: storage/production.sqlite3
+  cache:
+    adapter: sqlite3
+    pool: 5
+    timeout: 5000
+    database: storage/cache.sqlite3

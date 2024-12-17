@@ -1,0 +1,33 @@
+# Ignore log files
+*.log
+
+# Ignore database configuration
+/config/database.yml
+/config/master.key
+
+# Ignore bundler config
+/.bundle
+
+# Ignore all logfiles and tempfiles
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+
+# Ignore master key for decrypting credentials
+/config/master.key
+
+# Ignore node modules
+/node_modules
+
+# Ignore yarn files
+/yarn-error.log
+yarn-debug.log*
+.yarn-integrity
+
+# Ignore uploaded files in development
+/storage/*
+!/storage/.keep
+
+# Ignore .env file containing environment variables
+.env

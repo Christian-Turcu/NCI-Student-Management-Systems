@@ -1,0 +1,1184 @@
+  [1m[35m (4.3ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY)[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::InternalMetadata Create (12.7ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'test', '2024-12-17 11:49:57.754839', '2024-12-17 11:49:57.754841') RETURNING "key"[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Migrating to CreateRecords (20241217112824)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35m (0.2ms)[0m  [1m[35mCREATE TABLE "records" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar, "description" text, "status" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20241217112824') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+Migrating to CreateStudents (20241217113045)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "students" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar, "email" varchar, "enrollment_number" varchar, "course" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20241217113045') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+Migrating to RenameEnrollmentNumberToStudentNumber (20241217113607)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA foreign_keys[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TEMPORARY TABLE "astudents" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar, "email" varchar, "student_number" varchar, "course" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "astudents" ("id","name","email","student_number","course","created_at","updated_at")
+                     SELECT "id","name","email","enrollment_number","course","created_at","updated_at" FROM "students"[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE "students"[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "students" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "name" varchar, "email" varchar, "student_number" varchar, "course" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL)[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "students" ("id","name","email","student_number","course","created_at","updated_at")
+                     SELECT "id","name","email","student_number","course","created_at","updated_at" FROM "astudents"[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE "astudents"[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20241217113607') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "schema_sha1"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "schema_sha1"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mPRAGMA foreign_keys[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF[0m
+  [1m[36mFixtures Load (0.1ms)[0m  [1m[31mDELETE FROM "records";
+DELETE FROM "students";
+INSERT INTO "records" ("id", "title", "description", "status", "created_at", "updated_at") VALUES (980190962, 'MyString', 'MyText', 'MyString', '2024-12-17 11:50:23.771173', '2024-12-17 11:50:23.771173'), (298486374, 'MyString', 'MyText', 'MyString', '2024-12-17 11:50:23.771173', '2024-12-17 11:50:23.771173');
+INSERT INTO "students" ("id", "name", "email", "student_number", "course", "created_at", "updated_at") VALUES (980190962, 'John Smith', 'john@example.com', 'STN001', 'Computer Science', '2024-12-17 11:50:23.773538', '2024-12-17 11:50:23.773538'), (298486374, 'Jane Doe', 'jane@example.com', 'STN002', 'Information Technology', '2024-12-17 11:50:23.773538', '2024-12-17 11:50:23.773538')[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1[0m
+  [1m[36mTRANSACTION (12.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_key_check[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+StudentsControllerTest: test_should_show_student
+------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/show.html.erb within layouts/application
+  Rendered students/show.html.erb within layouts/application (Duration: 0.5ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 9.9ms | GC: 0.0ms)
+Completed 200 OK in 34ms (Views: 15.4ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentsControllerTest: test_should_get_new
+-------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/new" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/new.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 14.5ms | GC: 0.0ms)
+  Rendered students/new.html.erb within layouts/application (Duration: 15.5ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 15.7ms | GC: 0.0ms)
+Completed 200 OK in 17ms (Views: 16.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------------
+StudentsControllerTest: test_should_destroy_student
+---------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started DELETE "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Destroy (0.1ms)[0m  [1m[31mDELETE FROM "students" WHERE "students"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 1ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_update_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#update as HTML
+  Parameters: {"student"=>{"name"=>"Updated Name", "email"=>"[FILTERED]", "student_number"=>"STN001", "course"=>"Computer Science"}, "id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Update (0.1ms)[0m  [1m[33mUPDATE "students" SET "name" = ?, "updated_at" = ? WHERE "students"."id" = ?[0m  [["name", "Updated Name"], ["updated_at", "2024-12-17 11:50:23.961625"], ["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 1ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+StudentsControllerTest: test_should_get_edit
+--------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962/edit" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/edit.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 0.6ms | GC: 0.0ms)
+  Rendered students/edit.html.erb within layouts/application (Duration: 0.9ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_create_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started POST "/students" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#create as HTML
+  Parameters: {"student"=>{"name"=>"New Student", "email"=>"[FILTERED]", "student_number"=>"STN200", "course"=>"Engineering"}}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "New Student"], ["email", "[FILTERED]"], ["student_number", "STN200"], ["course", "Engineering"], ["created_at", "2024-12-17 11:50:23.968773"], ["updated_at", "2024-12-17 11:50:23.968773"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 1ms (ActiveRecord: 0.2ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" ORDER BY "students"."id" DESC LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------
+StudentsControllerTest: test_should_get_index
+---------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students"[0m
+  Rendered students/index.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.1ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.2ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------
+RecordTest: test_should_not_save_record_without_title
+-----------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------
+RecordTest: test_should_save_valid_record
+-----------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Create (0.3ms)[0m  [1m[32mINSERT INTO "records" ("title", "description", "status", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?) RETURNING "id"[0m  [["title", "Test Title"], ["description", "Test Description"], ["status", "active"], ["created_at", "2024-12-17 11:50:23.976569"], ["updated_at", "2024-12-17 11:50:23.976569"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------------
+StudentTest: test_should_not_save_student_without_name
+------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.2ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", nil], ["email", "[FILTERED]"], ["student_number", "STN999"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:23.978298"], ["updated_at", "2024-12-17 11:50:23.978298"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------------------------
+StudentTest: test_should_not_save_student_with_duplicate_student_number
+-----------------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:23.980090"], ["updated_at", "2024-12-17 11:50:23.980090"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "Jane Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Information Technology"], ["created_at", "2024-12-17 11:50:23.980700"], ["updated_at", "2024-12-17 11:50:23.980700"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------------------------
+StudentTest: test_should_not_save_student_without_student_number
+----------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", nil], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:23.981694"], ["updated_at", "2024-12-17 11:50:23.981694"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentTest: test_should_save_valid_student
+-------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Create (0.3ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:23.982781"], ["updated_at", "2024-12-17 11:50:23.982781"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------
+RecordsControllerTest: test_should_show_record
+----------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:23 +0000
+Processing by RecordsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/show.html.erb within layouts/application
+  Rendered records/_record.html.erb (Duration: 0.3ms | GC: 0.0ms)
+  Rendered records/show.html.erb within layouts/application (Duration: 9.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 10.1ms | GC: 0.0ms)
+Completed 200 OK in 13ms (Views: 12.0ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------
+RecordsControllerTest: test_should_get_new
+------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/new" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 8.5ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 9.5ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 9.8ms | GC: 0.0ms)
+Completed 200 OK in 11ms (Views: 10.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------------
+RecordsControllerTest: test_should_destroy_record
+-------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started DELETE "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Destroy (0.1ms)[0m  [1m[31mDELETE FROM "records" WHERE "records"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records
+Completed 303 See Other in 1ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_update_record
+------------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#update as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}, "id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.8ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 1.2ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.4ms | GC: 0.0ms)
+Completed 422 Unprocessable Content in 3ms (Views: 2.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+RecordsControllerTest: test_should_get_edit
+-------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962/edit" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.6ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 0.7ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.1ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_create_record
+------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started POST "/records" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#create as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}}
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.7ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 422 Unprocessable Content in 2ms (Views: 1.2ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mCACHE Record Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+RecordsControllerTest: test_should_get_index
+--------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records" for 127.0.0.1 at 2024-12-17 11:50:24 +0000
+Processing by RecordsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/index.html.erb within layouts/application
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records"[0m
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/index.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.1ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "schema_sha1"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35mSQL (0.8ms)[0m  [1m[35mPRAGMA foreign_keys[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF[0m
+  [1m[36mFixtures Load (0.1ms)[0m  [1m[31mDELETE FROM "records";
+DELETE FROM "students";
+INSERT INTO "records" ("id", "title", "description", "status", "created_at", "updated_at") VALUES (980190962, 'MyString', 'MyText', 'MyString', '2024-12-17 11:50:55.209951', '2024-12-17 11:50:55.209951'), (298486374, 'MyString', 'MyText', 'MyString', '2024-12-17 11:50:55.209951', '2024-12-17 11:50:55.209951');
+INSERT INTO "students" ("id", "name", "email", "student_number", "course", "created_at", "updated_at") VALUES (980190962, 'John Smith', 'john@example.com', 'STN001', 'Computer Science', '2024-12-17 11:50:55.215961', '2024-12-17 11:50:55.215961'), (298486374, 'Jane Doe', 'jane@example.com', 'STN002', 'Information Technology', '2024-12-17 11:50:55.215961', '2024-12-17 11:50:55.215961')[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1[0m
+  [1m[36mTRANSACTION (4.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (0.1ms)[0m  [1m[35mPRAGMA foreign_key_check[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_create_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started POST "/students" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#create as HTML
+  Parameters: {"student"=>{"name"=>"New Student", "email"=>"[FILTERED]", "student_number"=>"STN200", "course"=>"Engineering"}}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.2ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN200"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "New Student"], ["email", "[FILTERED]"], ["student_number", "STN200"], ["course", "Engineering"], ["created_at", "2024-12-17 11:50:55.350341"], ["updated_at", "2024-12-17 11:50:55.350341"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190963
+Completed 302 Found in 15ms (ActiveRecord: 0.3ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" ORDER BY "students"."id" DESC LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_update_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#update as HTML
+  Parameters: {"student"=>{"name"=>"Updated Name", "email"=>"[FILTERED]", "student_number"=>"STN001", "course"=>"Computer Science"}, "id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? AND "students"."id" != ? LIMIT ?[0m  [["student_number", "STN001"], ["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Update (0.0ms)[0m  [1m[33mUPDATE "students" SET "name" = ?, "updated_at" = ? WHERE "students"."id" = ?[0m  [["name", "Updated Name"], ["updated_at", "2024-12-17 11:50:55.358910"], ["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190962
+Completed 302 Found in 2ms (ActiveRecord: 0.2ms (3 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------
+StudentsControllerTest: test_should_get_index
+---------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students"[0m
+  Rendered students/index.html.erb within layouts/application (Duration: 1.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 11.0ms | GC: 0.0ms)
+Completed 200 OK in 23ms (Views: 16.0ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+StudentsControllerTest: test_should_get_edit
+--------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962/edit" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/edit.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 5.4ms | GC: 0.0ms)
+  Rendered students/edit.html.erb within layouts/application (Duration: 6.6ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 6.9ms | GC: 0.0ms)
+Completed 200 OK in 8ms (Views: 7.2ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+StudentsControllerTest: test_should_show_student
+------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/show.html.erb within layouts/application
+  Rendered students/show.html.erb within layouts/application (Duration: 0.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.7ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 0.9ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentsControllerTest: test_should_get_new
+-------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/new" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/new.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 0.7ms | GC: 0.0ms)
+  Rendered students/new.html.erb within layouts/application (Duration: 0.9ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------------
+StudentsControllerTest: test_should_destroy_student
+---------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started DELETE "/students/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by StudentsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Destroy (0.1ms)[0m  [1m[31mDELETE FROM "students" WHERE "students"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 2ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentTest: test_should_save_valid_student
+-------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:55.409558"], ["updated_at", "2024-12-17 11:50:55.409558"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------------------------
+StudentTest: test_should_not_save_student_without_student_number
+----------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" IS NULL LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------------------------
+StudentTest: test_should_not_save_student_with_duplicate_student_number
+-----------------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:50:55.412393"], ["updated_at", "2024-12-17 11:50:55.412393"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------------
+StudentTest: test_should_not_save_student_without_name
+------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN999"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------
+RecordTest: test_should_not_save_record_without_title
+-----------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------
+RecordTest: test_should_save_valid_record
+-----------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Create (0.3ms)[0m  [1m[32mINSERT INTO "records" ("title", "description", "status", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?) RETURNING "id"[0m  [["title", "Test Title"], ["description", "Test Description"], ["status", "active"], ["created_at", "2024-12-17 11:50:55.416871"], ["updated_at", "2024-12-17 11:50:55.416871"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_create_record
+------------------------------------------------
+  [1m[36mRecord Load (0.2ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started POST "/records" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#create as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}}
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 1.8ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 3.0ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 12.7ms | GC: 0.0ms)
+Completed 422 Unprocessable Content in 16ms (Views: 16.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mCACHE Record Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_update_record
+------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#update as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}, "id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.7ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 1.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.6ms | GC: 0.0ms)
+Completed 422 Unprocessable Content in 4ms (Views: 2.8ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+RecordsControllerTest: test_should_get_index
+--------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/index.html.erb within layouts/application
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records"[0m
+  Rendered records/_record.html.erb (Duration: 0.2ms | GC: 0.0ms)
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/index.html.erb within layouts/application (Duration: 2.2ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 2.7ms | GC: 0.0ms)
+Completed 200 OK in 4ms (Views: 2.8ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+RecordsControllerTest: test_should_get_edit
+-------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962/edit" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.5ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 0.6ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | GC: 0.0ms)
+Completed 200 OK in 1ms (Views: 1.0ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------
+RecordsControllerTest: test_should_show_record
+----------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/show.html.erb within layouts/application
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/show.html.erb within layouts/application (Duration: 0.5ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.6ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 0.8ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------
+RecordsControllerTest: test_should_get_new
+------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/new" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.7ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 200 OK in 1ms (Views: 1.1ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------------
+RecordsControllerTest: test_should_destroy_record
+-------------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started DELETE "/records/980190962" for 127.0.0.1 at 2024-12-17 11:50:55 +0000
+Processing by RecordsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Destroy (0.1ms)[0m  [1m[31mDELETE FROM "records" WHERE "records"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records
+Completed 303 See Other in 1ms (ActiveRecord: 0.1ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "schema_sha1"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mPRAGMA foreign_keys[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF[0m
+  [1m[36mFixtures Load (0.1ms)[0m  [1m[31mDELETE FROM "records";
+DELETE FROM "students";
+INSERT INTO "records" ("id", "title", "description", "status", "created_at", "updated_at") VALUES (980190962, 'MyString', 'MyText', 'MyString', '2024-12-17 11:51:24.613888', '2024-12-17 11:51:24.613888'), (298486374, 'MyString', 'MyText', 'MyString', '2024-12-17 11:51:24.613888', '2024-12-17 11:51:24.613888');
+INSERT INTO "students" ("id", "name", "email", "student_number", "course", "created_at", "updated_at") VALUES (980190962, 'John Smith', 'john@example.com', 'STN001', 'Computer Science', '2024-12-17 11:51:24.615982', '2024-12-17 11:51:24.615982'), (298486374, 'Jane Doe', 'jane@example.com', 'STN002', 'Information Technology', '2024-12-17 11:51:24.615982', '2024-12-17 11:51:24.615982')[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1[0m
+  [1m[36mTRANSACTION (4.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_key_check[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_update_record
+------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/records/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#update as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}, "id"=>"980190962"}
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+[31mUnpermitted parameters: :description, :status. Context: { controller: RecordsController, action: update, request: #<ActionDispatch::Request:0x0000027b8556d0d0>, params: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}, "controller"=>"records", "action"=>"update", "id"=>"980190962"} }[0m
+Completed 500 Internal Server Error in 13ms (ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------------
+RecordsControllerTest: test_should_destroy_record
+-------------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started DELETE "/records/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Destroy (0.1ms)[0m  [1m[31mDELETE FROM "records" WHERE "records"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records
+Completed 302 Found in 2ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------
+RecordsControllerTest: test_should_show_record
+----------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/show.html.erb within layouts/application
+  Rendered records/_record.html.erb (Duration: 0.2ms | GC: 0.0ms)
+  Rendered records/show.html.erb within layouts/application (Duration: 2.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 20.4ms | GC: 0.0ms)
+Completed 200 OK in 32ms (Views: 25.2ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+RecordsControllerTest: test_should_get_edit
+-------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962/edit" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 5.3ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 6.3ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 6.5ms | GC: 0.0ms)
+Completed 200 OK in 8ms (Views: 6.7ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+RecordsControllerTest: test_should_get_index
+--------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/index.html.erb within layouts/application
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records"[0m
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/index.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------
+RecordsControllerTest: test_should_get_new
+------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/new" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 1.1ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 1.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.7ms | GC: 0.0ms)
+Completed 200 OK in 3ms (Views: 1.9ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_create_record
+------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started POST "/records" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by RecordsController#create as HTML
+  Parameters: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}}
+[31mUnpermitted parameters: :description, :status. Context: { controller: RecordsController, action: create, request: #<ActionDispatch::Request:0x0000027b85b70fb8>, params: {"record"=>{"description"=>"MyText", "status"=>"MyString", "title"=>"MyString"}, "controller"=>"records", "action"=>"create"} }[0m
+Completed 500 Internal Server Error in 0ms (ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+RecordsControllerTest - test_should_create_record: NoMethodError raised.
+If you expected this exception, use `assert_raises` as near to the code that raises as possible.
+Other block based assertions (e.g. `assert_difference`) can be used, as long as `assert_raises` is inside their block.
+
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------------------------
+StudentTest: test_should_not_save_student_without_student_number
+----------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" IS NULL LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------------
+StudentTest: test_should_not_save_student_without_name
+------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN999"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------------------------
+StudentTest: test_should_not_save_student_with_duplicate_student_number
+-----------------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:51:24.799668"], ["updated_at", "2024-12-17 11:51:24.799668"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.2ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentTest: test_should_save_valid_student
+-------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:51:24.802174"], ["updated_at", "2024-12-17 11:51:24.802174"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------
+RecordTest: test_should_not_save_record_without_title
+-----------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------
+RecordTest: test_should_save_valid_record
+-----------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_update_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/students/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#update as HTML
+  Parameters: {"student"=>{"name"=>"Updated Name", "email"=>"[FILTERED]", "student_number"=>"STN001", "course"=>"Computer Science"}, "id"=>"980190962"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? AND "students"."id" != ? LIMIT ?[0m  [["student_number", "STN001"], ["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Update (0.1ms)[0m  [1m[33mUPDATE "students" SET "name" = ?, "updated_at" = ? WHERE "students"."id" = ?[0m  [["name", "Updated Name"], ["updated_at", "2024-12-17 11:51:24.809428"], ["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190962
+Completed 302 Found in 3ms (ActiveRecord: 0.3ms (3 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------------
+StudentsControllerTest: test_should_destroy_student
+---------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started DELETE "/students/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Destroy (0.1ms)[0m  [1m[31mDELETE FROM "students" WHERE "students"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 1ms (ActiveRecord: 0.1ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+StudentsControllerTest: test_should_show_student
+------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/show.html.erb within layouts/application
+  Rendered students/show.html.erb within layouts/application (Duration: 0.5ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | GC: 0.0ms)
+Completed 200 OK in 5ms (Views: 3.9ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+StudentsControllerTest: test_should_get_edit
+--------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962/edit" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/edit.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 1.8ms | GC: 0.0ms)
+  Rendered students/edit.html.erb within layouts/application (Duration: 2.7ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 3.0ms | GC: 0.0ms)
+Completed 200 OK in 5ms (Views: 3.3ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------
+StudentsControllerTest: test_should_get_index
+---------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students"[0m
+  Rendered students/index.html.erb within layouts/application (Duration: 0.9ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentsControllerTest: test_should_get_new
+-------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/new" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/new.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 0.6ms | GC: 0.0ms)
+  Rendered students/new.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.0ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.2ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_create_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started POST "/students" for 127.0.0.1 at 2024-12-17 11:51:24 +0000
+Processing by StudentsController#create as HTML
+  Parameters: {"student"=>{"name"=>"New Student", "email"=>"[FILTERED]", "student_number"=>"STN200", "course"=>"Engineering"}}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN200"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "New Student"], ["email", "[FILTERED]"], ["student_number", "STN200"], ["course", "Engineering"], ["created_at", "2024-12-17 11:51:24.838766"], ["updated_at", "2024-12-17 11:51:24.838766"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190963
+Completed 302 Found in 2ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" ORDER BY "students"."id" DESC LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Migrating to AddFieldsToRecords (20241217115134)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35m (0.3ms)[0m  [1m[35mALTER TABLE "records" ADD "date" date[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "records" ADD "artist" varchar[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20241217115134') RETURNING "version"[0m
+  [1m[36mTRANSACTION (4.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = ? ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "schema_sha1"]]
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN immediate TRANSACTION[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mPRAGMA foreign_keys[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF[0m
+  [1m[36mFixtures Load (0.1ms)[0m  [1m[31mDELETE FROM "records";
+DELETE FROM "students";
+INSERT INTO "records" ("id", "title", "description", "status", "created_at", "updated_at", "date", "artist") VALUES (980190962, 'Test Record 1', NULL, NULL, '2024-12-17 11:52:32.596011', '2024-12-17 11:52:32.596011', '2024-01-01', 'Test Artist 1'), (298486374, 'Test Record 2', NULL, NULL, '2024-12-17 11:52:32.596011', '2024-12-17 11:52:32.596011', '2024-01-02', 'Test Artist 2');
+INSERT INTO "students" ("id", "name", "email", "student_number", "course", "created_at", "updated_at") VALUES (980190962, 'John Smith', 'john@example.com', 'STN001', 'Computer Science', '2024-12-17 11:52:32.600411', '2024-12-17 11:52:32.600411'), (298486374, 'Jane Doe', 'jane@example.com', 'STN002', 'Information Technology', '2024-12-17 11:52:32.600411', '2024-12-17 11:52:32.600411')[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1[0m
+  [1m[36mTRANSACTION (4.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_key_check[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentTest: test_should_save_valid_student
+-------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.2ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.2ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:52:32.618600"], ["updated_at", "2024-12-17 11:52:32.618600"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------------
+StudentTest: test_should_not_save_student_without_name
+------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN999"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------------------------
+StudentTest: test_should_not_save_student_without_student_number
+----------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" IS NULL LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------------------------
+StudentTest: test_should_not_save_student_with_duplicate_student_number
+-----------------------------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "John Doe"], ["email", "[FILTERED]"], ["student_number", "STN100"], ["course", "Computer Science"], ["created_at", "2024-12-17 11:52:32.623147"], ["updated_at", "2024-12-17 11:52:32.623147"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN100"], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TO SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------
+RecordTest: test_should_save_valid_record
+-----------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Create (0.2ms)[0m  [1m[32mINSERT INTO "records" ("title", "description", "status", "created_at", "updated_at", "date", "artist") VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["title", "Test Record"], ["description", nil], ["status", nil], ["created_at", "2024-12-17 11:52:32.628521"], ["updated_at", "2024-12-17 11:52:32.628521"], ["date", "2024-01-01"], ["artist", "Test Artist"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-----------------------------------------------------
+RecordTest: test_should_not_save_record_without_title
+-----------------------------------------------------
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+StudentsControllerTest: test_should_get_new
+-------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/new" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/new.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 5.4ms | GC: 0.0ms)
+  Rendered students/new.html.erb within layouts/application (Duration: 6.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 16.1ms | GC: 0.0ms)
+Completed 200 OK in 40ms (Views: 21.2ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_update_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/students/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#update as HTML
+  Parameters: {"student"=>{"name"=>"Updated Name", "email"=>"[FILTERED]", "student_number"=>"STN001", "course"=>"Computer Science"}, "id"=>"980190962"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.0ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? AND "students"."id" != ? LIMIT ?[0m  [["student_number", "STN001"], ["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Update (0.1ms)[0m  [1m[33mUPDATE "students" SET "name" = ?, "updated_at" = ? WHERE "students"."id" = ?[0m  [["name", "Updated Name"], ["updated_at", "2024-12-17 11:52:32.785222"], ["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190962
+Completed 302 Found in 12ms (ActiveRecord: 0.3ms (3 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+StudentsControllerTest: test_should_show_student
+------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/show.html.erb within layouts/application
+  Rendered students/show.html.erb within layouts/application (Duration: 0.4ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.1ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------------
+StudentsControllerTest: test_should_destroy_student
+---------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started DELETE "/students/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Destroy (0.1ms)[0m  [1m[31mDELETE FROM "students" WHERE "students"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students
+Completed 302 Found in 1ms (ActiveRecord: 0.1ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+---------------------------------------------
+StudentsControllerTest: test_should_get_index
+---------------------------------------------
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering students/index.html.erb within layouts/application
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students"[0m
+  Rendered students/index.html.erb within layouts/application (Duration: 1.0ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+StudentsControllerTest: test_should_get_edit
+--------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/students/980190962/edit" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering students/edit.html.erb within layouts/application
+  Rendered students/_form.html.erb (Duration: 0.7ms | GC: 0.0ms)
+  Rendered students/edit.html.erb within layouts/application (Duration: 1.0ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.4ms | GC: 0.0ms)
+Completed 200 OK in 3ms (Views: 1.6ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------------
+StudentsControllerTest: test_should_create_student
+--------------------------------------------------
+  [1m[36mStudent Load (0.1ms)[0m  [1m[34mSELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+Started POST "/students" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by StudentsController#create as HTML
+  Parameters: {"student"=>{"name"=>"New Student", "email"=>"[FILTERED]", "student_number"=>"STN200", "course"=>"Engineering"}}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mStudent Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "students" WHERE "students"."student_number" = ? LIMIT ?[0m  [["student_number", "STN200"], ["LIMIT", 1]]
+  [1m[36mStudent Create (0.1ms)[0m  [1m[32mINSERT INTO "students" ("name", "email", "student_number", "course", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["name", "New Student"], ["email", "[FILTERED]"], ["student_number", "STN200"], ["course", "Engineering"], ["created_at", "2024-12-17 11:52:32.828365"], ["updated_at", "2024-12-17 11:52:32.828365"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/students/980190963
+Completed 302 Found in 1ms (ActiveRecord: 0.2ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mStudent Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "students"[0m
+  [1m[36mStudent Load (0.0ms)[0m  [1m[34mSELECT "students".* FROM "students" ORDER BY "students"."id" DESC LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------
+RecordsControllerTest: test_should_get_new
+------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/new" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#new as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/new.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 1.9ms | GC: 0.0ms)
+  Rendered records/new.html.erb within layouts/application (Duration: 2.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 3.1ms | GC: 0.0ms)
+Completed 200 OK in 6ms (Views: 4.9ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_update_record
+------------------------------------------------
+  [1m[36mRecord Load (0.1ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started PATCH "/records/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#update as HTML
+  Parameters: {"record"=>{"title"=>"Updated Title", "date"=>"2024-01-01", "artist"=>"Test Artist 1"}, "id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Update (0.3ms)[0m  [1m[33mUPDATE "records" SET "title" = ?, "updated_at" = ? WHERE "records"."id" = ?[0m  [["title", "Updated Title"], ["updated_at", "2024-12-17 11:52:32.842125"], ["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records/980190962
+Completed 302 Found in 2ms (ActiveRecord: 0.3ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+----------------------------------------------
+RecordsControllerTest: test_should_show_record
+----------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#show as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/show.html.erb within layouts/application
+  Rendered records/_record.html.erb (Duration: 0.2ms | GC: 0.0ms)
+  Rendered records/show.html.erb within layouts/application (Duration: 2.1ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 2.3ms | GC: 0.0ms)
+Completed 200 OK in 3ms (Views: 2.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------------
+RecordsControllerTest: test_should_destroy_record
+-------------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started DELETE "/records/980190962" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#destroy as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Destroy (0.1ms)[0m  [1m[31mDELETE FROM "records" WHERE "records"."id" = ?[0m  [["id", 980190962]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records
+Completed 302 Found in 1ms (ActiveRecord: 0.1ms (2 queries, 0 cached) | GC: 0.0ms)
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+--------------------------------------------
+RecordsControllerTest: test_should_get_index
+--------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#index as HTML
+  Rendering layout layouts/application.html.erb
+  Rendering records/index.html.erb within layouts/application
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records"[0m
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/_record.html.erb (Duration: 0.0ms | GC: 0.0ms)
+  Rendered records/index.html.erb within layouts/application (Duration: 0.7ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 0.8ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 0.9ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+-------------------------------------------
+RecordsControllerTest: test_should_get_edit
+-------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+Started GET "/records/980190962/edit" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#edit as HTML
+  Parameters: {"id"=>"980190962"}
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  Rendering layout layouts/application.html.erb
+  Rendering records/edit.html.erb within layouts/application
+  Rendered records/_form.html.erb (Duration: 0.5ms | GC: 0.0ms)
+  Rendered records/edit.html.erb within layouts/application (Duration: 0.8ms | GC: 0.0ms)
+  Rendered layout layouts/application.html.erb (Duration: 1.2ms | GC: 0.0ms)
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.0ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[36mBEGIN deferred TRANSACTION[0m
+------------------------------------------------
+RecordsControllerTest: test_should_create_record
+------------------------------------------------
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" WHERE "records"."id" = ? LIMIT ?[0m  [["id", 980190962], ["LIMIT", 1]]
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+Started POST "/records" for 127.0.0.1 at 2024-12-17 11:52:32 +0000
+Processing by RecordsController#create as HTML
+  Parameters: {"record"=>{"title"=>"New Record", "date"=>"2024-01-03", "artist"=>"New Artist"}}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mSAVEPOINT active_record_1[0m
+  [1m[36mRecord Create (0.1ms)[0m  [1m[32mINSERT INTO "records" ("title", "description", "status", "created_at", "updated_at", "date", "artist") VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING "id"[0m  [["title", "New Record"], ["description", nil], ["status", nil], ["created_at", "2024-12-17 11:52:32.859479"], ["updated_at", "2024-12-17 11:52:32.859479"], ["date", "2024-01-03"], ["artist", "New Artist"]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mRELEASE SAVEPOINT active_record_1[0m
+Redirected to http://www.example.com/records/980190963
+Completed 302 Found in 1ms (ActiveRecord: 0.2ms (1 query, 0 cached) | GC: 0.0ms)
+  [1m[36mRecord Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "records"[0m
+  [1m[36mRecord Load (0.0ms)[0m  [1m[34mSELECT "records".* FROM "records" ORDER BY "records"."id" DESC LIMIT ?[0m  [["LIMIT", 1]]
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION[0m
