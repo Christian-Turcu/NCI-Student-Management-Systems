@@ -1,7 +1,16 @@
-<h1>Students#new</h1>
-<p>Find me in app/views/students/new.html.erb</p>
-
-<div class="container mt-4">
-  <h1 class="text-purple mb-4">New Student</h1>
-  <%= render 'form', student: @student %>
+<%# New student page (LO1: Framework Implementation) %>
+<%# Demonstrates Bootstrap integration and form handling %>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-purple text-white py-3">
+          <h2 class="mb-0 text-center">New Student Registration</h2>
+        </div>
+        <div class="card-body p-4">
+          <%= render 'form', student: @student %>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

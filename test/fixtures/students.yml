@@ -1,0 +1,11 @@
+one:
+  name: John Doe
+  email: john@example.com
+  course: Computer Science
+  student_number: ST001
+
+two:
+  name: Jane Smith
+  email: jane@example.com
+  course: Data Science
+  student_number: ST002

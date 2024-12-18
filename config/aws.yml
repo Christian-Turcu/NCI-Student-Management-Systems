@@ -1,0 +1,35 @@
+# AWS Configuration for Production Deployment 
+
+# EC2 Instance Configuration
+ec2:
+  instance_type: t2.micro  # Free tier eligible instance
+  region: eu-west-1        # Ireland region for lower latency
+  ami_id: ami-0c55b159cbfafe1f0  # Ubuntu 20.04 LTS
+  
+  # Security Group Configuration
+  security_groups:
+    - name: rails-app-sg
+      description: "Security group for Rails application"
+      rules:
+        - protocol: tcp
+          port: 80
+          cidr: "0.0.0.0/0"  # Allow HTTP traffic
+        - protocol: tcp
+          port: 443
+          cidr: "0.0.0.0/0"  # Allow HTTPS traffic
+        - protocol: tcp
+          port: 22
+          cidr: "YOUR_IP/32"  # Restrict SSH access
+
+# S3 Configuration for Asset Storage
+s3:
+  bucket_name: nci-student-records
+  region: eu-west-1
+  access_control: private
+
+# RDS Configuration for Production Database
+rds:
+  instance_class: db.t3.micro
+  engine: postgresql
+  engine_version: "13.4"
+  storage_size: 20  # GB

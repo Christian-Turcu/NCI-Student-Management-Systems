@@ -1,3 +1,5 @@
+<%# Student form partial (LO1: Framework Implementation) %>
+<%# Implements form validation and Bootstrap styling %>
 <%= form_with(model: student, local: true, class: 'needs-validation') do |f| %>
   <% if student.errors.any? %>
     <div class="alert alert-danger">
@@ -10,33 +12,38 @@
     </div>
   <% end %>
 
-  <div class="mb-3">
-    <%= f.label :name, class: 'form-label' %>
-    <%= f.text_field :name, class: 'form-control' %>
+  <div class="mb-4">
+    <%= f.label :name, class: 'form-label fw-bold' %>
+    <%= f.text_field :name, class: 'form-control form-control-lg', placeholder: 'Enter student name', required: true %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :email, class: 'form-label fw-bold' %>
+    <%= f.email_field :email, class: 'form-control form-control-lg', placeholder: 'Enter student email', required: true %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :student_number, class: 'form-label fw-bold' %>
+    <%= f.text_field :student_number, class: 'form-control form-control-lg', placeholder: 'Enter student number', required: true %>
   </div>
 
   <div class="mb-3">
-    <%= f.label :email, class: 'form-label' %>
-    <%= f.email_field :email, class: 'form-control' %>
+    <%= f.label :course, class: "form-label" %>
+    <%= f.select :course, [
+      'Computer Science',
+      'Information Technology',
+      'Data Science',
+      'Electrical Engineer',
+      'Biotechnology',
+      'Workshop',
+      'Mechanical Engineer',
+      'Civil Engineering',
+      'Ethical Hacking'
+    ], { prompt: 'Select a course' }, { class: 'form-select' } %>
   </div>
 
-  <div class="mb-3">
-    <%= f.label :student_number, class: 'form-label' %>
-    <%= f.text_field :student_number, class: 'form-control' %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :course, class: 'form-label' %>
-    <%= f.select :course, 
-      ['Computer Science', 'Information Technology', 'Data Science', 'Ethical Hacking', 
-       'Mechanical Engineer', 'Civil Engineering', 'Electrical Engineer', 'Biotechnology', 'Workshop'],
-      { include_blank: 'Select a course' },
-      class: 'form-select' 
-    %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.submit class: 'btn btn-primary' %>
-    <%= link_to 'Back', students_path, class: 'btn btn-secondary' %>
+  <div class="d-grid gap-2">
+    <%= f.submit 'Create Student', class: 'btn btn-purple btn-lg' %>
+    <%= link_to 'Back', students_path, class: 'btn btn-secondary btn-lg mt-2' %>
   </div>
 <% end %>

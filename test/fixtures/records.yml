@@ -1,0 +1,13 @@
+one:
+  title: First Record
+  description: This is the first test record
+  status: active
+  date: 2024-01-01
+  artist: Test Artist
+
+two:
+  title: Second Record
+  description: This is the second test record
+  status: pending
+  date: 2024-01-02
+  artist: Another Artist
