@@ -28,17 +28,11 @@ jobs:
       RAILS_ENV: test
 
     steps:
-      - name: Set up job
-        run: echo "Setting up test job..."
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y google-chrome-stable curl libjemalloc2 libvips sqlite3
 
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Set up Environment Variables
-        run: |
-          echo "Setting up environment variables..."
-          echo "RAILS_ENV=test" >> $GITHUB_ENV
-          echo "CI=true" >> $GITHUB_ENV
       
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -46,22 +40,29 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
       
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
-      - name: Configure Bundler
-        run: |
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
-      
-      - name: Run tests
-        run: |
-          bundle exec rails test:system
+      - name: Prepare test database
         env:
           RAILS_ENV: test
-          CI: true
+        run: bin/rails db:test:prepare
+
+      - name: Start Rails server
+        env:
+          RAILS_ENV: test
+        run: |
+          bin/rails server -e test -b 0.0.0.0 &
+          sleep 5
+      
+      - name: Run tests
+        env:
+          RAILS_ENV: test
+        run: bin/rails test test:system
+
+      - name: Keep screenshots from failed system tests
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots
+          path: ${{ github.workspace }}/tmp/screenshots
 
       - name: Complete job
         run: echo "Test job completed successfully"
@@ -78,61 +79,60 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2.2'
-          bundler-cache: true
-
-      - name: Setup SSH
+      - name: Set up SSH Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          echo "Setting up SSH..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          echo "SSH setup complete"
 
       - name: Test SSH Connection
         run: |
-          echo "Testing SSH connection..."
-          ssh -v -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
-
-      - name: Stop Running Servers
-        run: |
-          echo "Stopping any running Rails servers..."
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} '
-            # Kill any running Rails server processes
-            pkill -f "rails server" || true
-            pkill -f "puma" || true
-            # Stop puma service if it exists
-            sudo systemctl stop puma || true
-            # Double check no Rails processes are running
-            ps aux | grep -i "[r]ails\|[p]uma"
-            echo "All Rails servers stopped"
-          '
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
         run: |
-          echo "Starting deployment..."
-          rsync -avz --progress \
-            -e "ssh -i ~/.ssh/id_rsa" \
-            --exclude '.git' \
-            --exclude 'node_modules' \
-            --exclude 'tmp' \
-            ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            
+            # Update system packages
+            sudo apt-get update -y
+            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev
 
-          echo "Running deployment commands..."
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} '
+            # Navigate to app directory
             cd /home/ubuntu/app
-            bundle install
-            bundle exec rails db:migrate RAILS_ENV=production
+
+            # Ensure proper ownership
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/app
+
+            # Clean up existing bundle
+            sudo rm -rf vendor/bundle
+
+            # Pull latest changes
+            git pull origin main
+
+            # Install dependencies
+            bundle install --jobs=4
+
+            # Stop any running servers
+            sudo systemctl stop puma || true
+            pkill -f puma || true
+
+            # Run migrations
+            RAILS_ENV=production bundle exec rails db:migrate
+
+            # Start the server
             sudo systemctl start puma
-            # Verify server started
-            sleep 5
-            systemctl status puma
-          '
-          echo "Deployment completed!"
+            
+            echo "Deployment Complete!"
+          EOF
+
+      - name: Verify Deployment
+        run: |
+          echo "Verifying deployment..."
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "systemctl status puma"
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
