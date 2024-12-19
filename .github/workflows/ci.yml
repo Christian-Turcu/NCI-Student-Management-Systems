@@ -1,24 +1,10 @@
-# CI/CD Pipeline Configuration 
 name: CI/CD Pipeline
 
-# Workflow triggers
-# Runs on push to main branch and pull requests
 on:
   push:
-    branches: [ main ]  # Trigger on main branch updates
+    branches: [ main ]
   pull_request:
-    branches: [ main ]  # Trigger on PRs to main
-
-permissions:
-  id-token: write
-  contents: read
-
-env:
-  AWS_REGION: us-east-1  # AWS Academy typically uses us-east-1
-  ECR_REPOSITORY: student-management-app
-  ECS_SERVICE: student-management-service
-  ECS_CLUSTER: nci-student-app
-  CONTAINER_NAME: student-app
+    branches: [ main ]
 
 jobs:
   test:
@@ -70,9 +56,6 @@ jobs:
         with:
           name: screenshots
           path: ${{ github.workspace }}/tmp/screenshots
-
-      - name: Complete job
-        run: echo "Test job completed successfully"
 
   deploy:
     needs: test
@@ -157,6 +140,3 @@ jobs:
         run: |
           echo "Verifying deployment..."
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "systemctl status puma"
-
-      - name: Complete job
-        run: echo "Deploy job completed successfully"
