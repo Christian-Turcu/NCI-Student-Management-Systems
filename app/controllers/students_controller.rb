@@ -1,12 +1,9 @@
-# StudentsController implements CRUD operations (LO1: Framework Implementation)
-# Demonstrates MVC pattern in Rails framework
+# StudentsController implements CRUD operations MVC pattern in Rails framework
 class StudentsController < ApplicationController
   # Implements DRY principle by setting up student instance
-  # before specific actions (LO1: Design Patterns)
   before_action :set_student, only: [:show, :edit, :update, :destroy]
 
   # Display all students with optional search functionality
-  # Part of Read operation in CRUD
   def index
     @students = Student.all
     if params[:search].present?
@@ -16,23 +13,19 @@ class StudentsController < ApplicationController
   end
 
   # Show individual student details
-  # Part of Read operation in CRUD
   def show
   end
 
   # Initialize new student instance for the form
-  # Part of Create operation in CRUD
   def new
     @student = Student.new
   end
 
   # Display edit form for existing student
-  # Part of Update operation in CRUD
   def edit
   end
 
   # Create new student record
-  # Part of Create operation in CRUD
   def create
     @student = Student.new(student_params)
 
@@ -51,7 +44,6 @@ class StudentsController < ApplicationController
   end
 
   # Update existing student record
-  # Part of Update operation in CRUD
   def update
     respond_to do |format|
       if @student.update(student_params)
@@ -67,7 +59,6 @@ class StudentsController < ApplicationController
   end
 
   # Delete existing student record
-  # Part of Delete operation in CRUD
   def destroy
     @student.destroy!
 

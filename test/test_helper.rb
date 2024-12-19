@@ -1,4 +1,4 @@
-# Test Helper Configuration (LO3: Test-Driven Development)
+# Test Helper Configuration 
 # Sets up the testing environment and common test functionality
 
 # Configure Rails environment for testing

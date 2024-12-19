@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment Script for AWS EC2 (LO2: Cloud Deployment)
+# Deployment Script for AWS EC2 
 
 echo "Starting deployment process..."
 

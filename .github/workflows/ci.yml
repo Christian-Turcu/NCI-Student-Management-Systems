@@ -1,8 +1,7 @@
 # CI/CD Pipeline Configuration 
-# Implements automated testing and deployment workflow
 name: CI/CD Pipeline
 
-# Define workflow triggers
+# Workflow triggers
 # Runs on push to main branch and pull requests
 on:
   push:
@@ -11,38 +10,38 @@ on:
     branches: [ main ]  # Trigger on PRs to main
 
 jobs:
-  # Test job: Implements automated testing (LO3: TDD)
+  #Implements automated testing 
   test:
     runs-on: ubuntu-latest  # Use Ubuntu runner
 
     steps:
-    # Step 1: Check out repository code
+    # Checks out repository code
     - uses: actions/checkout@v2
     
-    # Step 2: Set up Ruby environment
+    # Sets up Ruby environment
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.2.2'  # Specify Ruby version
+        ruby-version: '3.2.2'  # Ruby version
         bundler-cache: true    # Cache dependencies
     
-    # Step 3: Install project dependencies
+    # Installs the project dependencies
     - name: Install dependencies
       run: |
         gem install bundler
         bundle install
     
-    # Step 4: Run unit and integration tests
+    # Runs the unit and integration tests
     - name: Run tests
       run: |
         bundle exec rails test
         
-    # Step 5: Run system tests
+    # Runs system tests
     - name: Run system tests
       run: |
         bundle exec rails test:system
 
-    # Step 6: Deploy to AWS EC2 
+    # Deploys to AWS EC2 
     - name: Deploy to AWS
       if: github.ref == 'refs/heads/main'  # Only deploy from main branch
       env:

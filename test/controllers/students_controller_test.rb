@@ -1,4 +1,4 @@
-# Integration tests for StudentsController (LO3: Test-Driven Development)
+# Integration tests for StudentsController 
 # Demonstrates comprehensive testing of CRUD operations
 class StudentsControllerTest < ActionDispatch::IntegrationTest
   # Test setup: Creates test data and configures environment
@@ -39,7 +39,7 @@ class StudentsControllerTest < ActionDispatch::IntegrationTest
           name: "Test Student",
           email: "test@example.com",
           course: "Test Course",
-          student_number: "ST003"
+          student_number: "Test number"
         } 
       }
     end
@@ -69,7 +69,7 @@ class StudentsControllerTest < ActionDispatch::IntegrationTest
         name: "Updated Name",
         email: "updated@example.com",
         course: "Updated Course",
-        student_number: "ST004"
+        student_number: "update Number"
       } 
     }
     # Verifies proper redirect after update
