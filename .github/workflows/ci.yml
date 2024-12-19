@@ -69,16 +69,15 @@ jobs:
           
             # Set up master key
             mkdir -p config
-            # Ensure the master key is exactly 32 characters (16 bytes)
-            echo -n "$RAILS_MASTER_KEY" | cut -c1-32 > config/master.key
+            mv /tmp/master.key config/master.key
             chmod 600 config/master.key
           
             # Clean up any existing credentials
             rm -f config/credentials.yml.enc
             rm -f config/credentials/production.yml.enc
             
-            # Generate new credentials with proper master key
-            EDITOR="echo 'secret_key_base: $(openssl rand -hex 32)'" bundle exec rails credentials:edit
+            # Generate new credentials
+            EDITOR="/bin/true" bundle exec rails credentials:edit
           
             # Database setup
             bundle exec rails db:migrate RAILS_ENV=production
