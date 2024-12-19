@@ -38,10 +38,9 @@ class StudentsTest < ApplicationSystemTestCase
   test "should destroy Student" do
     visit students_url
     click_on "View", match: :first
-    click_on "Delete Student"
     
-    page.accept_confirm do
-      click_button "OK"
+    accept_confirm do
+      click_on "Delete"
     end
 
     assert_text "Student was successfully deleted"
