@@ -84,29 +84,27 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: Deploy to EC2
         run: |
           echo "Starting deployment..."
-          # Test SSH connection with verbose output
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -v ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+          # Create deployment package
+          zip -r deploy.zip . -x "*.git*" "node_modules/*" "tmp/*"
           
-          # Deploy application with progress
-          rsync -avz --progress \
-                --exclude='.git*' \
-                --exclude='node_modules' \
-                --exclude='tmp' \
-                -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
-                ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+          # Upload to EC2 using AWS CLI
+          aws s3 cp deploy.zip s3://student-app-deployment/deploy.zip
           
-          # Run setup script
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'cd /home/ubuntu/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
+          # Execute deployment script on EC2 using AWS Systems Manager
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands=["cd /home/ubuntu/app && aws s3 cp s3://student-app-deployment/deploy.zip . && unzip -o deploy.zip && chmod +x setup-ec2.sh && ./setup-ec2.sh"]
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
