@@ -73,12 +73,12 @@ jobs:
     - name: Prepare SSH key
       run: |
         echo "Setting up SSH key..."
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/key.pem
-        chmod 600 ~/.ssh/key.pem
-        ls -l ~/.ssh/key.pem
+        sudo mkdir -p /ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" | sudo tee /ssh/key.pem > /dev/null
+        sudo chmod 600 /ssh/key.pem
+        sudo ls -l /ssh/key.pem
         echo "Key contents:"
-        cat ~/.ssh/key.pem
+        sudo cat /ssh/key.pem
 
     # Test SSH Connection
     - name: Test SSH Connection
@@ -86,7 +86,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
-        key_path: ~/.ssh/key.pem
+        key_path: /ssh/key.pem
         debug: true
         script: |
           whoami
@@ -99,7 +99,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
-        key_path: ~/.ssh/key.pem
+        key_path: /ssh/key.pem
         source: "setup-ec2.sh,setup-security-group.sh"
         target: "~/"
         script: |
