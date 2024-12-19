@@ -63,9 +63,6 @@ jobs:
           RAILS_ENV: test
           CI: true
 
-      - name: Post Checkout code
-        run: echo "Post checkout tasks completed"
-
       - name: Complete job
         run: echo "Test job completed successfully"
 
@@ -78,7 +75,8 @@ jobs:
       RAILS_ENV: production
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -111,3 +109,6 @@ jobs:
           
           # Run setup script
           ssh ubuntu@${{ secrets.EC2_HOST }} 'cd /home/ubuntu/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
+
+      - name: Complete job
+        run: echo "Deploy job completed successfully"
