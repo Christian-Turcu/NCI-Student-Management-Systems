@@ -50,6 +50,15 @@ jobs:
               git pull origin main
             fi
 
+            # Install Bundler with sudo
+            sudo gem install bundler -v 2.5.23
+
+            # Install gems with sudo
+            sudo bundle install
+
+            # Ensure proper ownership of all files
+            sudo chown -R ubuntu:ubuntu .
+
             # Install Ruby and Bundler
             if ! command -v ruby &> /dev/null; then
               sudo apt-get install -y ruby
@@ -58,11 +67,7 @@ jobs:
             # Ensure Bundler is installed
             if ! command -v bundle &> /dev/null; then
               echo "Installing Bundler..."
-              sudo gem install bundler --no-document
             fi
-
-            # Install application dependencies
-            bundle install --jobs=4
 
             # Set correct permissions
             chmod +x bin/rails
