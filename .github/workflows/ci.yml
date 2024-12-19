@@ -64,27 +64,24 @@ jobs:
     # Runs the unit and integration tests
     - name: Run tests
       run: |
-        bundle exec rails test
-        
-    # Runs system tests
-    - name: Run system tests
-      run: |
         bundle exec rails test:system
       env:
         RAILS_ENV: test
         CI: true
-        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
-        SELENIUM_HEADLESS: true
 
-    # Debug SSH Setup
-    - name: Debug SSH Setup
+    # Setup SSH
+    - name: Setup SSH
       run: |
-        echo "Setting up SSH key..."
-        echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
-        chmod 600 ec2_key.pem
-        ls -l ec2_key.pem
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+        chmod 600 ~/.ssh/ec2_key.pem
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    # Test SSH Connection
+    - name: Test SSH Connection
+      run: |
         echo "Testing SSH connection..."
-        ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
     # Copy files to EC2
     - name: Copy files to EC2
@@ -97,13 +94,13 @@ jobs:
         aws configure set region us-east-1
         
         echo "Copying files..."
-        scp -v -o StrictHostKeyChecking=no -i ec2_key.pem setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
-        scp -v -o StrictHostKeyChecking=no -i ec2_key.pem setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        scp -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        scp -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
         
         echo "Setting permissions and running scripts..."
-        ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
-        ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
-        ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
+        ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
+        ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
+        ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
 
   deploy:
     needs: test
