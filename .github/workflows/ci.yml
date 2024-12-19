@@ -25,6 +25,12 @@ jobs:
         ruby-version: '3.2.2'  # Ruby version
         bundler-cache: true    # Cache dependencies
     
+    # Configure Bundler
+    - name: Configure Bundler
+      run: |
+        bundle config unset deployment
+        bundle config set --local without 'production'
+    
     # Installs the project dependencies
     - name: Install dependencies
       run: |

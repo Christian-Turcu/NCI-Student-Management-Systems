@@ -11,6 +11,7 @@ gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps 
 gem "importmap-rails"
 # Hotwire's SPA-like page accelerator 
+gem "turbo-rails"
 # Hotwire's modest JavaScript framework 
 gem "stimulus-rails"
 # Build JSON APIs with ease 
@@ -30,9 +31,6 @@ gem "bootsnap", require: false
 # Deploy this application anywhere as a Docker container 
 gem "kamal", require: false
 
-# Add HTTP asset caching/compression and X-Sendfile acceleration to Puma 
-
-# Use Active Storage variants 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
@@ -51,14 +49,5 @@ group :development do
   gem 'capistrano', '~> 3.17'
   gem 'capistrano-rails', '~> 1.6'
   gem 'capistrano-bundler', '~> 2.1'
-  gem 'capistrano-passenger', '~> 0.2.1'
   gem 'capistrano-rbenv', '~> 2.2'
-  gem "ed25519"
-  gem "bcrypt_pbkdf"
-end
-
-group :test do
-  # Use system testing 
-  gem "capybara"
-  gem "selenium-webdriver"
 end
