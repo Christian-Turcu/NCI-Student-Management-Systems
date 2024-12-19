@@ -59,6 +59,14 @@ jobs:
         RAILS_ENV: test
         CI: true
 
+    # Setup SSH Keys
+    - name: Setup SSH Keys
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
     # Deploy to EC2
     - name: Deploy to EC2
       uses: easingthemes/ssh-deploy@v4
