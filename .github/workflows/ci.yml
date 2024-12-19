@@ -28,10 +28,7 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          # Remove quotes from master key
-          MASTER_KEY=$(echo -n $RAILS_MASTER_KEY)
-          
-          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "MASTER_KEY='$MASTER_KEY' bash -s" << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
             # Update system packages and install required dependencies
@@ -52,21 +49,6 @@ jobs:
               git pull origin main
             fi
 
-            # Set up Rails environment and master key
-            export RAILS_ENV=production
-            export RAILS_MASTER_KEY="$MASTER_KEY"
-
-            # Verify the master key
-            echo "Master key length: ${#MASTER_KEY}"
-            
-            # Set up master key file
-            mkdir -p config
-            echo -n "$MASTER_KEY" > config/master.key
-            chmod 600 config/master.key
-
-            # Verify the file
-            echo "Master key file length: $(wc -c < config/master.key)"
-
             # Install Bundler
             sudo gem install bundler -v 2.5.23
 
@@ -74,6 +56,14 @@ jobs:
             bundle config set --local deployment 'true'
             bundle config set --local without 'development test'
             bundle install --quiet
+
+            # Set up Rails environment
+            export RAILS_ENV=production
+
+            # Create master key file
+            mkdir -p config
+            echo "${RAILS_MASTER_KEY}" > config/master.key
+            chmod 600 config/master.key
 
             # Database setup
             bundle exec rails db:migrate
