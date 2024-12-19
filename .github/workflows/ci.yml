@@ -86,22 +86,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH Key
+      - name: Debug SSH key
+        run: |
+          echo "Length of SSH key: ${#SSH_PRIVATE_KEY}"
+          echo "First few characters: ${SSH_PRIVATE_KEY:0:50}..."
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Set up SSH Key
         run: |
-          mkdir -p ~/.ssh
-          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          
+          # Debug SSH setup
+          ls -la ~/.ssh
+          echo "SSH directory permissions:"
+          ls -la ~/.ssh/id_rsa
+          echo "Testing SSH key format:"
+          ssh-keygen -l -f ~/.ssh/id_rsa || echo "Invalid key format"
 
       - name: Test SSH Connection
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "echo Connected Successfully!"
+          ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
             
             # Update system packages
@@ -143,7 +155,7 @@ jobs:
       - name: Verify Deployment
         run: |
           echo "Verifying deployment..."
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "systemctl status puma"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "systemctl status puma"
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
