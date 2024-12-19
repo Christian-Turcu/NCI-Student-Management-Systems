@@ -31,7 +31,7 @@ jobs:
             
             # Update system packages and install required dependencies
             sudo apt-get update -y
-            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev
+            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev nodejs npm
 
             # Create app directory if it doesn't exist
             sudo mkdir -p /home/ubuntu/app
@@ -53,10 +53,23 @@ jobs:
             # Install gems with sudo
             sudo bundle install
 
+            # Create and migrate database
+            bundle exec rails db:create db:migrate
+
+            # Install JavaScript dependencies
+            npm install
+
+            # Precompile assets
+            bundle exec rails assets:precompile
+
+            # Kill any existing Rails server
+            pkill -f "rails server" || true
+
             # Start the Rails server
-            bundle exec rails server -d -b 0.0.0.0
+            nohup bundle exec rails server -d -b 0.0.0.0 -p 3000 > /dev/null 2>&1 &
 
             echo "Deployment Complete!"
+            echo "Server should be accessible at http://${{ secrets.EC2_ELASTIC_IP }}:3000"
           EOF
 
       - name: Clean up
