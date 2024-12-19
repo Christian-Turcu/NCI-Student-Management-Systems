@@ -51,3 +51,10 @@ group :development do
   gem 'capistrano-bundler', '~> 2.1'
   gem 'capistrano-rbenv', '~> 2.2'
 end
+
+group :test do
+  # Use system testing [Capybara] framework
+  gem "capybara"
+  gem "selenium-webdriver"
+  gem "webdrivers"
+end
