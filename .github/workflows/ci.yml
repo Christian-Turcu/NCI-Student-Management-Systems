@@ -69,13 +69,25 @@ jobs:
         RAILS_ENV: test
         CI: true
 
+    # Prepare SSH key
+    - name: Prepare SSH key
+      run: |
+        echo "Setting up SSH key..."
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/key.pem
+        chmod 600 ~/.ssh/key.pem
+        ls -l ~/.ssh/key.pem
+        echo "Key contents:"
+        cat ~/.ssh/key.pem
+
     # Test SSH Connection
     - name: Test SSH Connection
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key_path: ~/.ssh/key.pem
+        debug: true
         script: |
           whoami
           pwd
@@ -87,7 +99,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+        key_path: ~/.ssh/key.pem
         source: "setup-ec2.sh,setup-security-group.sh"
         target: "~/"
         script: |
