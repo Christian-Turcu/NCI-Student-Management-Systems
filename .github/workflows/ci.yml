@@ -63,6 +63,8 @@ jobs:
 
             # Ensure config directory exists
             mkdir -p config
+            mkdir -p tmp/pids
+            mkdir -p log
 
             # Set up master key
             echo "${RAILS_MASTER_KEY}" > config/master.key
@@ -78,30 +80,49 @@ jobs:
             pkill -f "rails server" || true
             rm -f tmp/pids/server.pid || true
 
-            # Create logs directory
-            mkdir -p log
-
-            # Start the Rails server in production mode with logging
-            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d -b 0.0.0.0 -p 3000 -e production > log/production.log 2>&1
+            echo "Starting Rails server..."
             
-            # Verify server is running
-            sleep 5
+            # Start the Rails server with nohup to keep it running after SSH session ends
+            nohup bundle exec rails server -b 0.0.0.0 -p 3000 -e production > log/production.log 2>&1 &
+            
+            # Wait a moment for the server to start
+            sleep 10
+            
+            # Check if server is running and listening
             if ps aux | grep "[r]ails server" > /dev/null; then
-              echo "Rails server is running!"
-              # Check if port 3000 is listening
+              echo "Rails server process is running"
               if netstat -tulpn | grep :3000 > /dev/null; then
-                echo "Port 3000 is active and listening!"
+                echo "Port 3000 is listening"
+                echo "Last 10 lines of production.log:"
+                tail -n 10 log/production.log
               else
-                echo "Warning: Port 3000 is not listening!"
+                echo "ERROR: Port 3000 is not listening"
+                echo "Checking production.log for errors:"
+                tail -n 50 log/production.log
               fi
             else
-              echo "Warning: Rails server failed to start!"
-              echo "Last 50 lines of log:"
+              echo "ERROR: Rails server failed to start"
+              echo "Checking production.log for errors:"
               tail -n 50 log/production.log
             fi
 
+            # Additional debugging information
+            echo "Process list:"
+            ps aux | grep rails
+            echo "Network ports:"
+            netstat -tulpn | grep 3000
+            echo "System memory:"
+            free -m
+
             echo "Deployment Complete!"
           EOF
+
+      - name: Verify Server
+        run: |
+          # Wait a moment for the server to be fully ready
+          sleep 5
+          # Try to connect to the server
+          curl -v http://${{ secrets.EC2_ELASTIC_IP }}:3000/
 
       - name: Clean up
         run: |
