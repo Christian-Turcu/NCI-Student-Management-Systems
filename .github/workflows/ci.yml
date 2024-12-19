@@ -29,6 +29,10 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
+          # First, send the master key
+          echo "$RAILS_MASTER_KEY" > master.key
+          scp -o StrictHostKeyChecking=no -i myKey.pem master.key ubuntu@${{ secrets.EC2_ELASTIC_IP }}:/tmp/master.key
+
           ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
@@ -56,15 +60,24 @@ jobs:
             # Install gems with sudo
             sudo bundle install --no-deployment
 
-            # Set up Rails master key
-            echo "${RAILS_MASTER_KEY}" > config/master.key
+            # Set up Rails master key from the temporary file
+            mv /tmp/master.key config/master.key
             chmod 600 config/master.key
 
+            # Create production database if it doesn't exist
+            RAILS_ENV=production bundle exec rails db:create || true
+
             # Run database migrations
-            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails db:migrate
+            RAILS_ENV=production bundle exec rails db:migrate
+
+            # Precompile assets
+            RAILS_ENV=production bundle exec rails assets:precompile
+
+            # Kill any existing Rails server
+            pkill -f "rails server" || true
 
             # Start the Rails server
-            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d
+            RAILS_ENV=production bundle exec rails server -d -b 0.0.0.0
 
             echo "Deployment Complete!"
           EOF
