@@ -86,37 +86,28 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Setup SSH key
-        env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          SSH_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          echo "Setting up SSH..."
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/key-0ad7a87d4cc1dd824.pem
-          chmod 600 ~/.ssh/key-0ad7a87d4cc1dd824.pem
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
-          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
-          echo "SSH key setup complete"
-          ls -la ~/.ssh/
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.EC2_SSH_KEY }}
+          known_hosts: ${{ secrets.EC2_HOST }}
+          if_key_exists: replace
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to EC2
-        env:
-          SSH_KEY: key-0ad7a87d4cc1dd824.pem
-          SSH_HOST: ${{ secrets.EC2_HOST }}
-          SSH_USER: ubuntu
         run: |
           echo "Starting deployment..."
-          # Test SSH connection
-          ssh -i ~/.ssh/$SSH_KEY $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"
+          # Test SSH connection with verbose output
+          ssh -v ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
           
           # Deploy application with progress
           rsync -avz --progress \
                 --exclude='.git*' \
                 --exclude='node_modules' \
                 --exclude='tmp' \
-                -e "ssh -i ~/.ssh/$SSH_KEY" \
-                ./ $SSH_USER@$SSH_HOST:/home/$SSH_USER/app/
+                ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
           
           # Run setup script
-          ssh -i ~/.ssh/$SSH_KEY $SSH_USER@$SSH_HOST 'cd /home/$SSH_USER/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
+          ssh ubuntu@${{ secrets.EC2_HOST }} 'cd /home/ubuntu/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
