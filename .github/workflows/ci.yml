@@ -69,6 +69,11 @@ jobs:
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws_region: ${{ env.AWS_REGION }}
 
+    - name: Configure Security Group
+      run: |
+        chmod +x ./setup-security-group.sh
+        ./setup-security-group.sh
+
     - name: Copy setup script to EC2
       uses: appleboy/scp-action@master
       with:
