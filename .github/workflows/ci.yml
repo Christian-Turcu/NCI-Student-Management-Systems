@@ -53,6 +53,17 @@ jobs:
           RAILS_ENV: test
           CI: true
 
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      RAILS_ENV: production
+
+    steps:
+      - uses: actions/checkout@v3
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -65,17 +76,6 @@ jobs:
         run: |
           aws sts get-caller-identity
           aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId"
-
-  deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      CI: true
-      RAILS_ENV: production
-
-    steps:
-      - uses: actions/checkout@v3
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
