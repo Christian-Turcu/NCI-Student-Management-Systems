@@ -5,6 +5,7 @@ on:
     branches:
       - main
 
+# Deployment workflow with Rails master key configuration
 jobs:
   deploy:
     runs-on: ubuntu-latest
