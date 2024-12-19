@@ -21,9 +21,16 @@ jobs:
   test:
     runs-on: ubuntu-latest  # Use Ubuntu runner
 
+    services:
+      selenium:
+        image: selenium/standalone-chrome:latest
+        ports:
+          - 4444:4444
+        options: --shm-size="2g"
+
     steps:
     # Checks out repository code
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     # Sets up Ruby environment
     - name: Set up Ruby
@@ -35,8 +42,8 @@ jobs:
     # Configure Bundler
     - name: Configure Bundler
       run: |
-        bundle config unset deployment
-        bundle config set --local without 'production'
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
     
     # Installs the project dependencies
     - name: Install dependencies
@@ -53,6 +60,28 @@ jobs:
     - name: Run system tests
       run: |
         bundle exec rails test:system
+      env:
+        RAILS_ENV: test
+        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+
+    # Set up AWS credentials
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
+    # Copy files to EC2
+    - name: Copy files to EC2
+      run: |
+        echo "${{ secrets.EC2_SSH_KEY }}" > ec2_key.pem
+        chmod 600 ec2_key.pem
+        scp -o StrictHostKeyChecking=no -i ec2_key.pem setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        scp -o StrictHostKeyChecking=no -i ec2_key.pem setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
+        ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
+        ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
 
   deploy:
     needs: test
