@@ -69,33 +69,18 @@ jobs:
         RAILS_ENV: test
         CI: true
 
-    # Test SSH Connection
-    - name: Test SSH Connection
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        script: |
-          whoami
-          pwd
-
     # Deploy to EC2
     - name: Deploy to EC2
-      if: success()
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        script: |
-          echo "Creating deployment directory..."
-          mkdir -p ~/deployment
-          cd ~/deployment
-            
-          echo "Running deployment scripts..."
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.EC2_HOST }}
+        REMOTE_USER: ${{ secrets.EC2_USERNAME }}
+        TARGET: "/home/${{ secrets.EC2_USERNAME }}/app"
+        SCRIPT_BEFORE: |
+          whoami
+          pwd
+        SCRIPT_AFTER: |
           chmod +x ~/setup-ec2.sh ~/setup-security-group.sh
           ~/setup-security-group.sh
           ~/setup-ec2.sh
