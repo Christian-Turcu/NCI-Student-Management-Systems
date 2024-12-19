@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: eu-west-1
+  AWS_REGION: us-east-1  # AWS Academy typically uses us-east-1
   ECR_REPOSITORY: student-management-app
   ECS_SERVICE: student-management-service
   ECS_CLUSTER: nci-student-app
@@ -80,18 +80,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set aws_session_token $AWS_SESSION_TOKEN
+          aws configure set default.region $AWS_DEFAULT_REGION
 
       - name: Test AWS Configuration
         run: |
+          echo "Testing AWS Configuration..."
           aws sts get-caller-identity
-          aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId"
+          aws ec2 describe-instances --filters "Name=instance-state-name,Values=running"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
