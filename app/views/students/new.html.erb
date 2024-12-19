@@ -10,6 +10,9 @@
         <div class="card-body p-4">
           <%= render 'form', student: @student %>
         </div>
+        <div class="card-footer bg-light text-center py-3">
+          <%= link_to 'Back to Students', students_path, class: 'btn btn-secondary' %>
+        </div>
       </div>
     </div>
   </div>
