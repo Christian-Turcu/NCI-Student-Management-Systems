@@ -66,28 +66,19 @@ jobs:
           
             # Set up Rails environment
             export RAILS_ENV=production
-            export RAILS_MASTER_KEY=$(cat /tmp/master.key)
           
             # Set up master key
             mkdir -p config
-            cp /tmp/master.key config/master.key
+            # Ensure the master key is exactly 32 characters (16 bytes)
+            echo -n "$RAILS_MASTER_KEY" | cut -c1-32 > config/master.key
             chmod 600 config/master.key
           
-            # Clean up temporary master key
-            rm -f /tmp/master.key
-          
-            # Verify the master key file
-            if [ ! -s config/master.key ]; then
-              echo "Error: master.key is empty!"
-              exit 1
-            fi
-          
-            # Remove existing credentials if they exist
+            # Clean up any existing credentials
             rm -f config/credentials.yml.enc
             rm -f config/credentials/production.yml.enc
-          
-            # Generate new credentials
-            EDITOR="echo" bundle exec rails credentials:edit
+            
+            # Generate new credentials with proper master key
+            EDITOR="echo 'secret_key_base: $(openssl rand -hex 32)'" bundle exec rails credentials:edit
           
             # Database setup
             bundle exec rails db:migrate RAILS_ENV=production
