@@ -73,30 +73,29 @@ jobs:
     - name: Setup SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+        chmod 600 key.pem
+        cat key.pem
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_rsa
 
     # Test SSH Connection
     - name: Test SSH Connection
       run: |
         echo "Testing SSH connection..."
-        ssh -o StrictHostKeyChecking=no -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "whoami"
+        ssh -i key.pem -o StrictHostKeyChecking=no -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "whoami"
 
     # Copy files to EC2
     - name: Deploy to EC2
       if: success()
       run: |
         echo "Copying files..."
-        scp -o StrictHostKeyChecking=no setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
-        scp -o StrictHostKeyChecking=no setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        scp -i key.pem -o StrictHostKeyChecking=no setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
+        scp -i key.pem -o StrictHostKeyChecking=no setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
         
         echo "Setting permissions and running scripts..."
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
-        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
+        ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
+        ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
+        ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
 
   deploy:
     needs: test
