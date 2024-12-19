@@ -7,7 +7,7 @@ class StudentsTest < ApplicationSystemTestCase
 
   test "visiting the index" do
     visit students_url
-    assert_selector "h1", text: "Students"
+    assert_selector "h1", text: "NCI Students"
   end
 
   test "should create student" do
@@ -37,11 +37,11 @@ class StudentsTest < ApplicationSystemTestCase
 
   test "should destroy Student" do
     visit students_url
-    click_on "Show", match: :first
+    click_on "View", match: :first
     click_on "Delete Student"
     
     page.accept_confirm do
-      click_on "OK"
+      click_button "OK"
     end
 
     assert_text "Student was successfully deleted"
