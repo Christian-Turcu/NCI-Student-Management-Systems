@@ -59,37 +59,29 @@ jobs:
         RAILS_ENV: test
         CI: true
 
-    # Setup SSH Keys
-    - name: Setup SSH Keys
+    # Print SSH Key Info
+    - name: Print SSH Key Info
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        echo "Length of SSH key is: $(echo "${{ secrets.EC2_SSH_KEY }}" | wc -c) characters"
+        echo "First few characters: $(echo "${{ secrets.EC2_SSH_KEY }}" | head -c 30)..."
+        echo "SSH key format check:"
+        echo "${{ secrets.EC2_SSH_KEY }}" | grep -E "^-----BEGIN .* PRIVATE KEY-----"
 
     # Deploy to EC2
     - name: Deploy to EC2
-      uses: appleboy/scp-action@v0.1.4
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "."
-        target: "/home/${{ secrets.EC2_USERNAME }}/app"
-        overwrite: true
-
-    # Execute Remote Scripts
-    - name: Execute Remote Scripts
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+        debug: true
         script: |
-          cd /home/${{ secrets.EC2_USERNAME }}/app
-          chmod +x setup-ec2.sh setup-security-group.sh
-          ./setup-security-group.sh
-          ./setup-ec2.sh
+          echo "Current directory: $(pwd)"
+          echo "Current user: $(whoami)"
+          mkdir -p ~/app
+          cd ~/app
+          echo "Test file creation" > test.txt
+          ls -la
 
   deploy:
     needs: test
