@@ -80,23 +80,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-          AWS_DEFAULT_REGION: us-east-1
+      - name: Install AWS CLI
         run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set aws_session_token $AWS_SESSION_TOKEN
-          aws configure set default.region $AWS_DEFAULT_REGION
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Configure AWS credentials
+        run: |
+          # Create AWS credentials file
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+          echo "aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}" >> ~/.aws/credentials
+          
+          # Create AWS config file
+          echo "[default]" > ~/.aws/config
+          echo "region=us-east-1" >> ~/.aws/config
+          echo "output=json" >> ~/.aws/config
+          
+          # Set permissions
+          chmod 600 ~/.aws/credentials
+          chmod 600 ~/.aws/config
 
       - name: Test AWS Configuration
         run: |
           echo "Testing AWS Configuration..."
-          aws sts get-caller-identity
-          aws ec2 describe-instances --filters "Name=instance-state-name,Values=running"
+          # Print AWS identity (without sensitive info)
+          aws sts get-caller-identity --query "Account" --output text || echo "Failed to get caller identity"
+          
+          # List EC2 instances (without sensitive info)
+          echo "Listing EC2 instances..."
+          aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" || echo "Failed to list instances"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
