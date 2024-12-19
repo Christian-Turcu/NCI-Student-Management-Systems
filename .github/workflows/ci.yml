@@ -29,10 +29,6 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          # First, send the master key
-          echo "$RAILS_MASTER_KEY" > master.key
-          scp -o StrictHostKeyChecking=no -i myKey.pem master.key ubuntu@${{ secrets.EC2_ELASTIC_IP }}:/tmp/master.key
-
           ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
@@ -60,9 +56,9 @@ jobs:
             # Install gems with sudo
             sudo bundle install --no-deployment
 
-            # Set up Rails master key from the temporary file
-            mv /tmp/master.key config/master.key
-            chmod 600 config/master.key
+            # Remove existing credentials and create new ones
+            rm -f config/credentials.yml.enc config/master.key
+            EDITOR=echo bundle exec rails credentials:edit
 
             # Create production database if it doesn't exist
             RAILS_ENV=production bundle exec rails db:create || true
