@@ -74,6 +74,7 @@ jobs:
         echo "[default]
         aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}
         region=us-east-1" > ~/.aws/credentials
         aws configure list
 
@@ -111,6 +112,7 @@ jobs:
         echo "[default]
         aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}
         region=${{ env.AWS_REGION }}" > ~/.aws/credentials
         aws configure list
 
