@@ -86,22 +86,29 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Set up SSH
+      - name: Debug SSH Setup
         run: |
+          echo "Setting up SSH directory..."
           mkdir -p ~/.ssh
+          echo "Setting SSH key permissions..."
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          echo "Adding host key..."
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          echo "Checking SSH key..."
+          ls -la ~/.ssh/
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} echo "SSH test successful"
 
       - name: Deploy to EC2
+        if: success()
         run: |
-          # Test SSH connection with debugging
-          ssh -v -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
-          
-          # Deploy application
-          rsync -av --exclude='.git*' \
+          echo "Starting deployment..."
+          # Deploy application with detailed output
+          rsync -avz --progress --exclude='.git*' \
                     --exclude='node_modules' \
                     --exclude='tmp' \
                     ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
           
+          echo "Running setup script..."
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
