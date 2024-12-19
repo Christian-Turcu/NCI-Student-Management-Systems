@@ -40,9 +40,6 @@ jobs:
             # Ensure proper ownership
             sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 
-            # Clean up existing bundle directory
-            sudo rm -rf vendor/bundle
-
             # Clone repository if it doesn't exist, otherwise pull latest changes
             if [ ! -d ".git" ]; then
               git clone https://github.com/Christian-Turcu/NCI-Student-Management-Systems.git .
@@ -56,49 +53,11 @@ jobs:
             # Install gems with sudo
             sudo bundle install --no-deployment
 
-            # Ensure proper ownership of all files
-            sudo chown -R ubuntu:ubuntu .
+            # Run database migrations
+            RAILS_ENV=production bundle exec rails db:migrate
 
-            # Set up database and assets
-            RAILS_ENV=production bundle exec rails db:create db:migrate
-            RAILS_ENV=production bundle exec rails assets:precompile
-
-            # Create systemd service for Puma
-            sudo tee /etc/systemd/system/puma.service << EOL
-[Unit]
-Description=Puma HTTP Server
-After=network.target
-
-[Service]
-Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/app
-Environment=RAILS_ENV=production
-ExecStart=/usr/local/bin/bundle exec puma -C config/puma.rb
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-            # Reload systemd and start Puma
-            sudo systemctl daemon-reload
-            sudo systemctl enable puma
-            sudo systemctl restart puma
-
-            # Install Ruby and Bundler
-            if ! command -v ruby &> /dev/null; then
-              sudo apt-get install -y ruby
-            fi
-
-            # Ensure Bundler is installed
-            if ! command -v bundle &> /dev/null; then
-              echo "Installing Bundler..."
-            fi
-
-            # Set correct permissions
-            chmod +x bin/rails
-            chmod +x bin/bundle
+            # Start the Rails server
+            RAILS_ENV=production bundle exec rails server -d
 
             echo "Deployment Complete!"
           EOF
