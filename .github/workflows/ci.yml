@@ -25,13 +25,15 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
+        env:
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
           ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
             # Update system packages and install required dependencies
             sudo apt-get update -y
-            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev nodejs npm
+            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev git curl
 
             # Create app directory if it doesn't exist
             sudo mkdir -p /home/ubuntu/app
@@ -47,29 +49,35 @@ jobs:
               git pull origin main
             fi
 
-            # Install Bundler with sudo
+            # Set up Rails environment
+            echo "export RAILS_ENV=production" >> ~/.bashrc
+            source ~/.bashrc
+
+            # Install Bundler
             sudo gem install bundler -v 2.5.23
 
-            # Install gems with sudo
-            sudo bundle install
+            # Install gems
+            bundle config set --local deployment 'true'
+            bundle config set --local without 'development test'
+            bundle install --quiet
 
-            # Create and migrate database
-            bundle exec rails db:create db:migrate
+            # Set up master key
+            echo "$RAILS_MASTER_KEY" > config/master.key
+            chmod 600 config/master.key
 
-            # Install JavaScript dependencies
-            npm install
+            # Database setup
+            bundle exec rails db:migrate RAILS_ENV=production
 
             # Precompile assets
-            bundle exec rails assets:precompile
+            bundle exec rails assets:precompile RAILS_ENV=production
 
             # Kill any existing Rails server
             pkill -f "rails server" || true
 
-            # Start the Rails server
-            nohup bundle exec rails server -d -b 0.0.0.0 -p 3000 > /dev/null 2>&1 &
+            # Start the Rails server in production mode
+            RAILS_ENV=production bundle exec rails server -d -b 0.0.0.0 -p 3000
 
             echo "Deployment Complete!"
-            echo "Server should be accessible at http://${{ secrets.EC2_ELASTIC_IP }}:3000"
           EOF
 
       - name: Clean up
