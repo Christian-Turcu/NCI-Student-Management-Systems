@@ -84,12 +84,25 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
+      - name: Prepare SSH key
+        run: |
+          echo "Preparing SSH key..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          echo "SSH key contents (first line):"
+          head -n 1 ~/.ssh/id_rsa
+          echo "Key permissions:"
+          ls -la ~/.ssh/id_rsa
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key_path: ~/.ssh/id_rsa
+          debug: true
           script: |
             cd /home/ubuntu/app
             git pull origin main
