@@ -31,7 +31,7 @@ jobs:
             
             # Update system packages and install required dependencies
             sudo apt-get update -y
-            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev
+            sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev libyaml-dev
 
             # Create app directory if it doesn't exist
             sudo mkdir -p /home/ubuntu/app
@@ -54,7 +54,7 @@ jobs:
             sudo gem install bundler -v 2.5.23
 
             # Install gems with sudo
-            sudo bundle install
+            sudo bundle install --no-deployment
 
             # Ensure proper ownership of all files
             sudo chown -R ubuntu:ubuntu .
