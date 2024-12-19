@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ main ]  # Trigger on PRs to main
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: eu-west-1
   ECR_REPOSITORY: student-management-app
@@ -74,7 +78,9 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-1
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+        mask-aws-account-id: true
 
     # Copy files to EC2
     - name: Copy files to EC2
@@ -101,6 +107,7 @@ jobs:
       with:
         aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws_region: ${{ env.AWS_REGION }}
 
     - name: Configure Security Group
