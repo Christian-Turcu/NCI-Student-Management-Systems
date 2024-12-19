@@ -59,6 +59,33 @@ jobs:
             # Ensure proper ownership of all files
             sudo chown -R ubuntu:ubuntu .
 
+            # Set up database and assets
+            RAILS_ENV=production bundle exec rails db:create db:migrate
+            RAILS_ENV=production bundle exec rails assets:precompile
+
+            # Create systemd service for Puma
+            sudo tee /etc/systemd/system/puma.service << EOL
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/app
+Environment=RAILS_ENV=production
+ExecStart=/usr/local/bin/bundle exec puma -C config/puma.rb
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+            # Reload systemd and start Puma
+            sudo systemctl daemon-reload
+            sudo systemctl enable puma
+            sudo systemctl restart puma
+
             # Install Ruby and Bundler
             if ! command -v ruby &> /dev/null; then
               sudo apt-get install -y ruby
@@ -73,16 +100,6 @@ jobs:
             chmod +x bin/rails
             chmod +x bin/bundle
 
-            # Stop any running servers
-            sudo systemctl stop puma || true
-            pkill -f puma || true
-
-            # Run database migrations
-            RAILS_ENV=production bundle exec rails db:migrate
-
-            # Start the server
-            sudo systemctl start puma
-            
             echo "Deployment Complete!"
           EOF
 
