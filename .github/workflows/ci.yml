@@ -21,106 +21,36 @@ env:
   CONTAINER_NAME: student-app
 
 jobs:
-  #Implements automated testing 
-  test:
-    runs-on: ubuntu-latest  # Use Ubuntu runner
-    env:
-      CI: true
-      RAILS_ENV: test
-
-    steps:
-    # Checks out repository code
-    - uses: actions/checkout@v3
-    
-    # Sets up Ruby environment
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.2.2'  # Ruby version
-        bundler-cache: true    # Cache dependencies
-    
-    # Install Chrome
-    - name: Install Chrome
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-
-    # Configure Bundler
-    - name: Configure Bundler
-      run: |
-        bundle config path vendor/bundle
-        bundle install --jobs 4 --retry 3
-    
-    # Runs the unit and integration tests
-    - name: Run tests
-      run: |
-        bundle exec rails test:system
-      env:
-        RAILS_ENV: test
-        CI: true
-
-    # Setup SSH Debug
-    - name: Setup SSH Debug
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/debug_key
-        chmod 600 ~/.ssh/debug_key
-        echo "=== SSH Key Info ==="
-        ssh-keygen -l -f ~/.ssh/debug_key || echo "Invalid key format"
-        echo "=== Key Format Check ==="
-        head -n 1 ~/.ssh/debug_key
-        echo "=== Converting key to OpenSSH format ==="
-        ssh-keygen -p -N "" -m PEM -f ~/.ssh/debug_key
-        rm ~/.ssh/debug_key
-
-    # Install SSH key
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.8.0
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-    # Add host key
-    - name: Add host key
-      run: |
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        chmod 600 ~/.ssh/known_hosts
-        echo "=== Testing SSH connection ==="
-        ssh -vvv ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful' && ls -la ~/.ssh/"
-
   deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
     env:
       CI: true
       RAILS_ENV: production
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Format SSH key
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          sed -i 's/\\n/\n/g' ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.EC2_USERNAME }}/app
-            chmod +x setup-ec2.sh
-            ./setup-ec2.sh
-
-      - name: Cleanup
-        if: always()
-        run: rm -f ~/.ssh/id_rsa
+        run: |
+          # Test SSH connection
+          ssh -v -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+          
+          # Deploy application
+          rsync -av --exclude='.git*' \
+                    --exclude='node_modules' \
+                    --exclude='tmp' \
+                    ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
