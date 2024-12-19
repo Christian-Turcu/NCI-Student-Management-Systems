@@ -1,50 +1,46 @@
-name: Deploy to EC2
+name: Deploy to AWS EC2
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure SSH
+      - name: Set up SSH Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_ELASTIC_IP }} >> ~/.ssh/known_hosts
+          echo "${SSH_PRIVATE_KEY}" > myKey.pem
+          chmod 600 myKey.pem
 
       - name: Test SSH Connection
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "echo Connected Successfully!"
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
-            # Create app directory if it doesn't exist
-            sudo mkdir -p /home/ubuntu/app
-            
-            # Update system packages
+            # Update system packages and install required dependencies
             sudo apt-get update -y
             sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev
 
-            # Navigate to app directory
+            # Create app directory if it doesn't exist
+            sudo mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
 
             # Ensure proper ownership
             sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 
-            # Clean up existing bundle
+            # Clean up existing bundle directory
             sudo rm -rf vendor/bundle
 
             # Clone repository if it doesn't exist, otherwise pull latest changes
@@ -54,18 +50,29 @@ jobs:
               git pull origin main
             fi
 
+            # Install Ruby and Bundler
+            if ! command -v ruby &> /dev/null; then
+              sudo apt-get install -y ruby
+            fi
+
+            # Ensure Bundler is installed
+            if ! command -v bundle &> /dev/null; then
+              echo "Installing Bundler..."
+              sudo gem install bundler --no-document
+            fi
+
+            # Install application dependencies
+            bundle install --jobs=4
+
             # Set correct permissions
             chmod +x bin/rails
             chmod +x bin/bundle
-
-            # Install dependencies
-            bundle install --jobs=4
 
             # Stop any running servers
             sudo systemctl stop puma || true
             pkill -f puma || true
 
-            # Run migrations
+            # Run database migrations
             RAILS_ENV=production bundle exec rails db:migrate
 
             # Start the server
@@ -74,7 +81,6 @@ jobs:
             echo "Deployment Complete!"
           EOF
 
-      - name: Verify Deployment
+      - name: Clean up
         run: |
-          echo "Verifying deployment..."
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "systemctl status puma"
+          rm -f myKey.pem
