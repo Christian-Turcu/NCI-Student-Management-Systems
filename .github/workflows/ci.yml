@@ -80,40 +80,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-
-      - name: Configure AWS credentials
-        run: |
-          # Create AWS credentials file
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "aws_session_token=${{ secrets.AWS_SESSION_TOKEN }}" >> ~/.aws/credentials
-          
-          # Create AWS config file
-          echo "[default]" > ~/.aws/config
-          echo "region=us-east-1" >> ~/.aws/config
-          echo "output=json" >> ~/.aws/config
-          
-          # Set permissions
-          chmod 600 ~/.aws/credentials
-          chmod 600 ~/.aws/config
-
-      - name: Test AWS Configuration
-        run: |
-          echo "Testing AWS Configuration..."
-          # Print AWS identity (without sensitive info)
-          aws sts get-caller-identity --query "Account" --output text || echo "Failed to get caller identity"
-          
-          # List EC2 instances (without sensitive info)
-          echo "Listing EC2 instances..."
-          aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" || echo "Failed to list instances"
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
