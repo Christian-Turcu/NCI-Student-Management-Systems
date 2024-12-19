@@ -89,23 +89,6 @@ jobs:
         echo "=== Testing SSH connection ==="
         ssh -vvv ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful' && ls -la ~/.ssh/"
 
-    # Deploy using SSH
-    - name: Deploy using SSH
-      if: success()
-      run: |
-        echo "Starting deployment..."
-        rsync -avz \
-          --exclude '.git' \
-          --exclude 'node_modules' \
-          --exclude 'tmp' \
-          ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-        
-        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-          "cd /home/${{ secrets.EC2_USERNAME }}/app && \
-           chmod +x setup-ec2.sh setup-security-group.sh && \
-           ./setup-security-group.sh && \
-           ./setup-ec2.sh"
-
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main'
@@ -118,26 +101,37 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@v0.1.4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."
-          target: "/home/ubuntu/app"
-          rm: true
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "🚀 Starting deployment..."
-            cd /home/ubuntu/app
-            echo "📦 Setting up application..."
-            chmod +x setup-ec2.sh
-            ./setup-ec2.sh
-            echo "✅ Deployment completed!"
+        id: deploy
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          # Install AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+          # Get instance ID from public IP
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=ip-address,Values=$EC2_HOST" \
+            --query "Reservations[].Instances[?State.Name=='running'].InstanceId[]" \
+            --output text)
+
+          echo "🚀 Starting deployment to instance $INSTANCE_ID..."
+
+          # Use AWS Systems Manager to run commands
+          aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands=["cd /home/$EC2_USERNAME/app && git pull origin main && chmod +x setup-ec2.sh && ./setup-ec2.sh"] \
+            --comment "Deploy application"
+
+          echo "✅ Deployment command sent successfully!"
