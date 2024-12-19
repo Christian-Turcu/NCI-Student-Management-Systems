@@ -36,7 +36,10 @@ group :development, :test do
 
   # Static analysis for security vulnerabilities 
   gem "brakeman", require: false
-
+  gem 'brakeman'
+  gem 'bundler-audit'
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
   # Omakase Ruby styling 
   gem "rubocop-rails-omakase", require: false
 end
