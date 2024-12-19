@@ -56,9 +56,35 @@ jobs:
             # Install gems with sudo
             sudo bundle install --no-deployment
 
-            # Remove existing credentials and create new ones
-            rm -f config/credentials.yml.enc config/master.key
-            EDITOR=echo bundle exec rails credentials:edit
+            # Set up database.yml for production
+            cat > config/database.yml << 'DBCONFIG'
+default: &default
+  adapter: sqlite3
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  <<: *default
+  database: db/development.sqlite3
+
+test:
+  <<: *default
+  database: db/test.sqlite3
+
+production:
+  <<: *default
+  database: db/production.sqlite3
+DBCONFIG
+
+            # Set up secrets.yml for production
+            cat > config/secrets.yml << 'SECRETS'
+production:
+  secret_key_base: <%= ENV["SECRET_KEY_BASE"] %>
+SECRETS
+
+            # Generate a secret key base
+            SECRET_KEY_BASE=$(bundle exec rake secret)
+            export SECRET_KEY_BASE
 
             # Create production database if it doesn't exist
             RAILS_ENV=production bundle exec rails db:create || true
@@ -73,7 +99,7 @@ jobs:
             pkill -f "rails server" || true
 
             # Start the Rails server
-            RAILS_ENV=production bundle exec rails server -d -b 0.0.0.0
+            RAILS_ENV=production SECRET_KEY_BASE=$SECRET_KEY_BASE bundle exec rails server -d -b 0.0.0.0
 
             echo "Deployment Complete!"
           EOF
