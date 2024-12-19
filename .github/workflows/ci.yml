@@ -51,6 +51,7 @@ jobs:
 
             # Set up Rails environment
             export RAILS_ENV=production
+            export PORT=3000
 
             # Install Bundler
             sudo gem install bundler -v 2.5.23
@@ -73,11 +74,31 @@ jobs:
             # Precompile assets
             RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails assets:precompile RAILS_ENV=production
 
-            # Kill any existing Rails server
+            # Kill any existing Rails server and remove old pid file
             pkill -f "rails server" || true
+            rm -f tmp/pids/server.pid || true
 
-            # Start the Rails server in production mode
-            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d -b 0.0.0.0 -p 3000
+            # Create logs directory
+            mkdir -p log
+
+            # Start the Rails server in production mode with logging
+            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d -b 0.0.0.0 -p 3000 -e production > log/production.log 2>&1
+            
+            # Verify server is running
+            sleep 5
+            if ps aux | grep "[r]ails server" > /dev/null; then
+              echo "Rails server is running!"
+              # Check if port 3000 is listening
+              if netstat -tulpn | grep :3000 > /dev/null; then
+                echo "Port 3000 is active and listening!"
+              else
+                echo "Warning: Port 3000 is not listening!"
+              fi
+            else
+              echo "Warning: Rails server failed to start!"
+              echo "Last 50 lines of log:"
+              tail -n 50 log/production.log
+            fi
 
             echo "Deployment Complete!"
           EOF
