@@ -1,0 +1,16 @@
+[Unit]
+Description=Student Management Application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/var/www/student-management-app
+ExecStart=/home/ubuntu/.rbenv/shims/bundle exec rails server -e production -p 3000
+Restart=always
+Environment=RAILS_ENV=production
+Environment=PATH=/home/ubuntu/.rbenv/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=DATABASE_URL=sqlite3:/var/www/student-management-app/db/production.sqlite3
+
+[Install]
+WantedBy=multi-user.target
