@@ -110,25 +110,37 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+    environment: production
+    env:
+      CI: true
+      RAILS_ENV: production
+
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
 
-    - name: Copy setup script to EC2
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "setup-ec2.sh"
-        target: "/home/ubuntu"
-
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          chmod +x ~/setup-ec2.sh
-          ~/setup-ec2.sh
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🚀 Starting deployment..."
+            cd /home/${{ secrets.EC2_USERNAME }}/app
+            echo "📦 Pulling latest changes..."
+            git pull origin main
+            echo "🔧 Installing dependencies..."
+            bundle install
+            echo "🔄 Running migrations..."
+            bundle exec rails db:migrate RAILS_ENV=production
+            echo "🔄 Precompiling assets..."
+            bundle exec rails assets:precompile RAILS_ENV=production
+            echo "🔄 Restarting application server..."
+            sudo systemctl restart puma
+            echo "✅ Deployment completed successfully!"
