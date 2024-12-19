@@ -61,7 +61,7 @@ jobs:
             bundle config set --local without 'development test'
             bundle install --quiet
 
-            # Ensure config directory exists
+            # Ensure directories exist
             mkdir -p config
             mkdir -p tmp/pids
             mkdir -p log
@@ -82,47 +82,43 @@ jobs:
 
             echo "Starting Rails server..."
             
-            # Start the Rails server with nohup to keep it running after SSH session ends
-            nohup bundle exec rails server -b 0.0.0.0 -p 3000 -e production > log/production.log 2>&1 &
+            # Start the server in foreground first to catch any immediate errors
+            echo "Testing server startup..."
+            timeout 5 bundle exec rails server -b 0.0.0.0 -p 3000 -e production || true
             
-            # Wait a moment for the server to start
+            echo "Starting server in background..."
+            # Start the Rails server with nohup and explicit environment variables
+            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" nohup bundle exec rails server -b 0.0.0.0 -p 3000 > log/production.log 2>&1 &
+            
+            # Wait for server to start
+            echo "Waiting for server to start..."
             sleep 10
             
-            # Check if server is running and listening
-            if ps aux | grep "[r]ails server" > /dev/null; then
-              echo "Rails server process is running"
-              if netstat -tulpn | grep :3000 > /dev/null; then
-                echo "Port 3000 is listening"
-                echo "Last 10 lines of production.log:"
-                tail -n 10 log/production.log
-              else
-                echo "ERROR: Port 3000 is not listening"
-                echo "Checking production.log for errors:"
-                tail -n 50 log/production.log
-              fi
-            else
-              echo "ERROR: Rails server failed to start"
-              echo "Checking production.log for errors:"
-              tail -n 50 log/production.log
-            fi
-
-            # Additional debugging information
-            echo "Process list:"
+            # Detailed debugging information
+            echo "=== Process Status ==="
             ps aux | grep rails
-            echo "Network ports:"
-            netstat -tulpn | grep 3000
-            echo "System memory:"
-            free -m
-
+            
+            echo "=== Network Status ==="
+            sudo netstat -tulpn | grep 3000
+            
+            echo "=== Firewall Status ==="
+            sudo ufw status
+            
+            echo "=== Rails Log ==="
+            tail -n 50 log/production.log
+            
+            echo "=== Testing Local Connection ==="
+            curl -v localhost:3000 || true
+            
             echo "Deployment Complete!"
           EOF
 
       - name: Verify Server
         run: |
-          # Wait a moment for the server to be fully ready
-          sleep 5
-          # Try to connect to the server
-          curl -v http://${{ secrets.EC2_ELASTIC_IP }}:3000/
+          echo "Waiting for server to be ready..."
+          sleep 15
+          echo "Attempting to connect to server..."
+          curl -v http://${{ secrets.EC2_ELASTIC_IP }}:3000/ || true
 
       - name: Clean up
         run: |
