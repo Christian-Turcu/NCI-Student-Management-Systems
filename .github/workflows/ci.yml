@@ -28,7 +28,7 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}" << 'EOF'
             set -e
             
             # Update system packages and install required dependencies
@@ -50,8 +50,7 @@ jobs:
             fi
 
             # Set up Rails environment
-            echo "export RAILS_ENV=production" >> ~/.bashrc
-            source ~/.bashrc
+            export RAILS_ENV=production
 
             # Install Bundler
             sudo gem install bundler -v 2.5.23
@@ -61,21 +60,24 @@ jobs:
             bundle config set --local without 'development test'
             bundle install --quiet
 
+            # Ensure config directory exists
+            mkdir -p config
+
             # Set up master key
-            echo "$RAILS_MASTER_KEY" > config/master.key
+            echo "${RAILS_MASTER_KEY}" > config/master.key
             chmod 600 config/master.key
 
             # Database setup
-            bundle exec rails db:migrate RAILS_ENV=production
+            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails db:migrate RAILS_ENV=production
 
             # Precompile assets
-            bundle exec rails assets:precompile RAILS_ENV=production
+            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails assets:precompile RAILS_ENV=production
 
             # Kill any existing Rails server
             pkill -f "rails server" || true
 
             # Start the Rails server in production mode
-            RAILS_ENV=production bundle exec rails server -d -b 0.0.0.0 -p 3000
+            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d -b 0.0.0.0 -p 3000
 
             echo "Deployment Complete!"
           EOF
