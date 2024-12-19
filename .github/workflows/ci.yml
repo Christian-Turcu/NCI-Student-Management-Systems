@@ -69,36 +69,31 @@ jobs:
         RAILS_ENV: test
         CI: true
 
-    # Install SSH key
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.8.0
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
-    # Add host key
-    - name: Add host key
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
     # Test SSH Connection
     - name: Test SSH Connection
-      run: |
-        echo "Testing SSH connection..."
-        ssh -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "whoami"
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          whoami
+          pwd
 
-    # Copy files to EC2
+    # Deploy to EC2
     - name: Deploy to EC2
       if: success()
-      run: |
-        echo "Copying files..."
-        scp setup-ec2.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
-        scp setup-security-group.sh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/
-        
-        echo "Setting permissions and running scripts..."
-        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "chmod +x ~/setup-ec2.sh ~/setup-security-group.sh"
-        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-security-group.sh"
-        ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "~/setup-ec2.sh"
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "setup-ec2.sh,setup-security-group.sh"
+        target: "~/"
+        script: |
+          chmod +x ~/setup-ec2.sh ~/setup-security-group.sh
+          ~/setup-security-group.sh
+          ~/setup-ec2.sh
 
   deploy:
     needs: test
