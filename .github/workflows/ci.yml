@@ -84,32 +84,38 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Prepare SSH key
+      - name: Setup SSH
         run: |
-          echo "Preparing SSH key..."
+          echo "Setting up SSH..."
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          echo "SSH key contents (first line):"
-          head -n 1 ~/.ssh/id_rsa
-          echo "Key permissions:"
-          ls -la ~/.ssh/id_rsa
+          echo "SSH setup complete"
+
+      - name: Test SSH Connection
+        run: |
+          echo "Testing SSH connection..."
+          ssh -v -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key_path: ~/.ssh/id_rsa
-          debug: true
-          script: |
+        run: |
+          echo "Starting deployment..."
+          rsync -avz --progress \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude 'tmp' \
+            ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+
+          echo "Running deployment commands..."
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} '
             cd /home/ubuntu/app
-            git pull origin main
             bundle install
             bundle exec rails db:migrate RAILS_ENV=production
             sudo systemctl restart puma
-            echo "Deployment completed!"
+          '
+          echo "Deployment completed!"
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
