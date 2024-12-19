@@ -1,5 +1,5 @@
 # CI/CD Pipeline Configuration 
-name: CI_CD_Pipeline
+name: CI/CD Pipeline
 
 # Workflow triggers
 # Runs on push to main branch and pull requests
@@ -69,6 +69,15 @@ jobs:
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws_region: ${{ env.AWS_REGION }}
 
+    - name: Copy setup script to EC2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "setup-ec2.sh"
+        target: "/home/ubuntu"
+
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
       with:
@@ -76,8 +85,5 @@ jobs:
         username: ${{ secrets.EC2_USERNAME }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd /var/www/student-management-app
-          git pull origin main
-          bundle install
-          bundle exec rails db:migrate RAILS_ENV=production
-          sudo systemctl restart student-app
+          chmod +x ~/setup-ec2.sh
+          ~/setup-ec2.sh
