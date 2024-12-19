@@ -26,6 +26,7 @@ jobs:
         image: selenium/standalone-chrome:latest
         ports:
           - 4444:4444
+          - 7900:7900
         options: --shm-size="2g"
 
     steps:
@@ -63,6 +64,7 @@ jobs:
       env:
         RAILS_ENV: test
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+        SELENIUM_HEADLESS: true
 
     # Set up AWS credentials
     - name: Set up AWS credentials

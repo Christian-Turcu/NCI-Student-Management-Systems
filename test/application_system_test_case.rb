@@ -4,7 +4,11 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400], options: {
     browser: :remote,
     url: "http://localhost:4444/wd/hub",
-    desired_capabilities: :chrome
+    capabilities: [
+      Selenium::WebDriver::Chrome::Options.new(
+        args: %w[headless disable-gpu no-sandbox]
+      )
+    ]
   }
 
   def accept_confirm
