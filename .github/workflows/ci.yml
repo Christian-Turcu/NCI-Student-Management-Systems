@@ -84,27 +84,19 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
       - name: Deploy to EC2
-        run: |
-          echo "Starting deployment..."
-          # Create deployment package
-          zip -r deploy.zip . -x "*.git*" "node_modules/*" "tmp/*"
-          
-          # Upload to EC2 using AWS CLI
-          aws s3 cp deploy.zip s3://student-app-deployment/deploy.zip
-          
-          # Execute deployment script on EC2 using AWS Systems Manager
-          aws ssm send-command \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
-            --document-name "AWS-RunShellScript" \
-            --parameters commands=["cd /home/ubuntu/app && aws s3 cp s3://student-app-deployment/deploy.zip . && unzip -o deploy.zip && chmod +x setup-ec2.sh && ./setup-ec2.sh"]
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            git pull origin main
+            bundle install
+            bundle exec rails db:migrate RAILS_ENV=production
+            sudo systemctl restart puma
+            echo "Deployment completed!"
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
