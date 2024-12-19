@@ -17,6 +17,7 @@ class StudentsTest < ApplicationSystemTestCase
     fill_in "Name", with: "Test Student"
     fill_in "Email", with: "test@example.com"
     fill_in "Course", with: "Test Course"
+    fill_in "Student number", with: "ST003"
     click_on "Create Student"
 
     assert_text "Student was successfully created"
@@ -35,9 +36,14 @@ class StudentsTest < ApplicationSystemTestCase
   end
 
   test "should destroy Student" do
-    visit student_url(@student)
-    click_on "Delete", match: :first
+    visit students_url
+    click_on "Show", match: :first
+    click_on "Delete Student"
     
+    page.accept_confirm do
+      click_on "OK"
+    end
+
     assert_text "Student was successfully deleted"
   end
 
