@@ -57,21 +57,12 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
     env:
       CI: true
       RAILS_ENV: production
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -97,5 +88,4 @@ jobs:
                     --exclude='tmp' \
                     ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
           
-          # Run deployment script
           ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
