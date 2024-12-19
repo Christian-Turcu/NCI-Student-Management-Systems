@@ -41,64 +41,66 @@ jobs:
             # Update system packages and install required dependencies
             sudo apt-get update -y
             sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev git curl
-
+          
             # Create app directory if it doesn't exist
             sudo mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
-
+          
             # Ensure proper ownership
             sudo chown -R ubuntu:ubuntu /home/ubuntu/app
-
+          
             # Clone repository if it doesn't exist, otherwise pull latest changes
             if [ ! -d ".git" ]; then
               git clone https://github.com/Christian-Turcu/NCI-Student-Management-Systems.git .
             else
               git pull origin main
             fi
-
+          
             # Install Bundler
             sudo gem install bundler -v 2.5.23
-
+          
             # Install gems
             bundle config set --local deployment 'true'
             bundle config set --local without 'development test'
             bundle install --quiet
-
+          
             # Set up Rails environment
             export RAILS_ENV=production
-
+            export RAILS_MASTER_KEY=$(cat /tmp/master.key)
+          
             # Set up master key
             mkdir -p config
-            mv /tmp/master.key config/master.key
+            cp /tmp/master.key config/master.key
             chmod 600 config/master.key
-
+          
+            # Clean up temporary master key
+            rm -f /tmp/master.key
+          
             # Verify the master key file
             if [ ! -s config/master.key ]; then
               echo "Error: master.key is empty!"
               exit 1
             fi
-
-            echo "Master key file contents:"
-            cat config/master.key
-
-            # Remove credentials.yml.enc if it exists
+          
+            # Remove existing credentials if they exist
             rm -f config/credentials.yml.enc
-
+            rm -f config/credentials/production.yml.enc
+          
             # Generate new credentials
             EDITOR="echo" bundle exec rails credentials:edit
-
+          
             # Database setup
-            bundle exec rails db:migrate
-
+            bundle exec rails db:migrate RAILS_ENV=production
+          
             # Precompile assets
             bundle exec rails assets:precompile
-
+          
             # Kill any existing Rails server
             pkill -f "rails server" || true
-
+          
             # Start the Rails server
             bundle exec rails server -d -b 0.0.0.0 -p 3000
-
+          
             echo "Deployment Complete!"
           EOF
 
