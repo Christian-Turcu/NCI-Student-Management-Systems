@@ -63,19 +63,31 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_KEY }}" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+        cat ~/.ssh/id_rsa
+        eval $(ssh-agent -s)
+        ssh-add ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
         echo "Testing SSH connection..."
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -vvv ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
     # Deploy using SSH
     - name: Deploy using SSH
       if: success()
       run: |
         echo "Starting deployment..."
-        scp -i ~/.ssh/id_rsa -r -v ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
-        ssh -i ~/.ssh/id_rsa -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh setup-security-group.sh && ./setup-security-group.sh && ./setup-ec2.sh"
+        rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+          --exclude '.git' \
+          --exclude 'node_modules' \
+          --exclude 'tmp' \
+          ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+        
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+          "cd /home/${{ secrets.EC2_USERNAME }}/app && \
+           chmod +x setup-ec2.sh setup-security-group.sh && \
+           ./setup-security-group.sh && \
+           ./setup-ec2.sh"
 
   deploy:
     needs: test
