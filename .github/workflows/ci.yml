@@ -20,14 +20,9 @@ jobs:
   #Implements automated testing 
   test:
     runs-on: ubuntu-latest  # Use Ubuntu runner
-
-    services:
-      selenium:
-        image: selenium/standalone-chrome:latest
-        ports:
-          - 4444:4444
-          - 7900:7900
-        options: --shm-size="2g"
+    env:
+      CI: true
+      RAILS_ENV: test
 
     steps:
     # Checks out repository code
@@ -40,6 +35,12 @@ jobs:
         ruby-version: '3.2.2'  # Ruby version
         bundler-cache: true    # Cache dependencies
     
+    # Install Chrome
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
     # Configure Bundler
     - name: Configure Bundler
       run: |
@@ -63,6 +64,7 @@ jobs:
         bundle exec rails test:system
       env:
         RAILS_ENV: test
+        CI: true
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
         SELENIUM_HEADLESS: true
 
