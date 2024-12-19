@@ -31,12 +31,17 @@ sudo chown -R ubuntu:ubuntu /var/www/student-management-app
 cd /var/www/student-management-app
 git clone https://github.com/Christian-Turcu/NCI-Student-Management-Systems.git .
 
+# Generate production key
+RAILS_ENV=production bundle exec rails credentials:setup
+
 # Install dependencies
+bundle config set --local without 'development test'
 bundle install
 
 # Setup database
 RAILS_ENV=production bundle exec rails db:create
 RAILS_ENV=production bundle exec rails db:migrate
+RAILS_ENV=production bundle exec rails assets:precompile
 
 # Create systemd service
 sudo tee /etc/systemd/system/rails.service << EOF
