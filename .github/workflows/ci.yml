@@ -28,6 +28,13 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
+          # First, write the master key to a local file
+          echo -n "$RAILS_MASTER_KEY" > master.key
+          
+          # Copy the master key to the server
+          scp -o StrictHostKeyChecking=no -i myKey.pem master.key ubuntu@${{ secrets.EC2_ELASTIC_IP }}:/tmp/master.key
+          
+          # Now run the deployment script
           ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
@@ -60,10 +67,25 @@ jobs:
             # Set up Rails environment
             export RAILS_ENV=production
 
-            # Create master key file
+            # Set up master key
             mkdir -p config
-            echo "${RAILS_MASTER_KEY}" > config/master.key
+            mv /tmp/master.key config/master.key
             chmod 600 config/master.key
+
+            # Verify the master key file
+            if [ ! -s config/master.key ]; then
+              echo "Error: master.key is empty!"
+              exit 1
+            fi
+
+            echo "Master key file contents:"
+            cat config/master.key
+
+            # Remove credentials.yml.enc if it exists
+            rm -f config/credentials.yml.enc
+
+            # Generate new credentials
+            EDITOR="echo" bundle exec rails credentials:edit
 
             # Database setup
             bundle exec rails db:migrate
@@ -83,3 +105,4 @@ jobs:
       - name: Clean up
         run: |
           rm -f myKey.pem
+          rm -f master.key
