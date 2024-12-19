@@ -28,8 +28,9 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "RAILS_MASTER_KEY=${RAILS_MASTER_KEY}" << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << EOF
             set -e
+            set -x  # Enable command echo
             
             # Update system packages and install required dependencies
             sudo apt-get update -y
@@ -52,6 +53,8 @@ jobs:
             # Set up Rails environment
             export RAILS_ENV=production
             export PORT=3000
+            export RAILS_MASTER_KEY='$RAILS_MASTER_KEY'
+            echo "RAILS_MASTER_KEY length: \${#RAILS_MASTER_KEY}"
 
             # Install Bundler
             sudo gem install bundler -v 2.5.23
@@ -67,22 +70,23 @@ jobs:
             mkdir -p log
 
             # Set up master key (ensure it's exactly 32 characters)
-            echo -n "${RAILS_MASTER_KEY}" > config/master.key
+            echo -n '$RAILS_MASTER_KEY' > config/master.key
             chmod 600 config/master.key
 
             # Verify master key length
-            echo "Master key length: $(wc -c < config/master.key)"
+            echo "Master key file length: \$(wc -c < config/master.key)"
+            echo "Master key file contents (first character): \$(head -c 1 config/master.key)"
 
             # Create credentials.yml.enc if it doesn't exist
             if [ ! -f config/credentials.yml.enc ]; then
-              EDITOR=true RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails credentials:edit
+              EDITOR=true bundle exec rails credentials:edit
             fi
 
             # Database setup with explicit key
-            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails db:migrate RAILS_ENV=production
+            bundle exec rails db:migrate RAILS_ENV=production
 
             # Precompile assets with explicit key
-            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails assets:precompile RAILS_ENV=production
+            bundle exec rails assets:precompile RAILS_ENV=production
 
             # Kill any existing Rails server and remove old pid file
             pkill -f "rails server" || true
@@ -91,9 +95,6 @@ jobs:
             echo "Starting Rails server..."
             
             # Start the server with explicit environment variables
-            RAILS_ENV=production \
-            RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" \
-            RAILS_SERVE_STATIC_FILES=true \
             bundle exec rails server -d -b 0.0.0.0 -p 3000
 
             # Wait for server to start
@@ -102,8 +103,13 @@ jobs:
             # Verify server is running
             if ps aux | grep "[r]ails server" > /dev/null; then
               echo "Rails server is running"
+              echo "Process details:"
+              ps aux | grep "[r]ails"
+              echo "Checking local connection..."
               if curl -s http://localhost:3000 > /dev/null; then
                 echo "Server is responding locally"
+                echo "Response from server:"
+                curl -v http://localhost:3000
               else
                 echo "Server is not responding locally"
                 echo "Last 50 lines of log:"
@@ -116,7 +122,7 @@ jobs:
             fi
 
             echo "Deployment Complete!"
-          EOF
+EOF
 
       - name: Verify Server
         run: |
