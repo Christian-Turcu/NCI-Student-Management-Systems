@@ -59,6 +59,20 @@ jobs:
         RAILS_ENV: test
         CI: true
 
+    # Setup SSH Debug
+    - name: Setup SSH Debug
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/debug_key
+        chmod 600 ~/.ssh/debug_key
+        echo "=== SSH Key Info ==="
+        ssh-keygen -l -f ~/.ssh/debug_key || echo "Invalid key format"
+        echo "=== Key Format Check ==="
+        head -n 1 ~/.ssh/debug_key
+        echo "=== Converting key to OpenSSH format ==="
+        ssh-keygen -p -N "" -m PEM -f ~/.ssh/debug_key
+        rm ~/.ssh/debug_key
+
     # Install SSH key
     - name: Install SSH key
       uses: webfactory/ssh-agent@v0.8.0
@@ -69,9 +83,11 @@ jobs:
     - name: Add host key
       run: |
         mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        echo "Testing SSH connection..."
-        ssh -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
+        chmod 600 ~/.ssh/known_hosts
+        echo "=== Testing SSH connection ==="
+        ssh -vvv ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful' && ls -la ~/.ssh/"
 
     # Deploy using SSH
     - name: Deploy using SSH
