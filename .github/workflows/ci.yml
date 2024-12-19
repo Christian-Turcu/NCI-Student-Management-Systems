@@ -98,6 +98,20 @@ jobs:
           echo "Testing SSH connection..."
           ssh -v -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
+      - name: Stop Running Servers
+        run: |
+          echo "Stopping any running Rails servers..."
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} '
+            # Kill any running Rails server processes
+            pkill -f "rails server" || true
+            pkill -f "puma" || true
+            # Stop puma service if it exists
+            sudo systemctl stop puma || true
+            # Double check no Rails processes are running
+            ps aux | grep -i "[r]ails\|[p]uma"
+            echo "All Rails servers stopped"
+          '
+
       - name: Deploy to EC2
         run: |
           echo "Starting deployment..."
@@ -113,7 +127,10 @@ jobs:
             cd /home/ubuntu/app
             bundle install
             bundle exec rails db:migrate RAILS_ENV=production
-            sudo systemctl restart puma
+            sudo systemctl start puma
+            # Verify server started
+            sleep 5
+            systemctl status puma
           '
           echo "Deployment completed!"
 
