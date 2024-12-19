@@ -1,68 +1,90 @@
-# CI/CD Pipeline Configuration 
-name: CI/CD Pipeline
+name: CI
 
-# Workflow triggers
-# Runs on push to main branch and pull requests
 on:
-  push:
-    branches: [ main ]  # Trigger on main branch updates
   pull_request:
-    branches: [ main ]  # Trigger on PRs to main
-
-permissions:
-  id-token: write
-  contents: read
-
-env:
-  AWS_REGION: us-east-1  # AWS Academy typically uses us-east-1
-  ECR_REPOSITORY: student-management-app
-  ECS_SERVICE: student-management-service
-  ECS_CLUSTER: nci-student-app
-  CONTAINER_NAME: student-app
+  push:
+    branches: [ main ]
 
 jobs:
+  scan_ruby:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+
+      - name: Scan for common Rails security vulnerabilities using static analysis
+        run: bin/brakeman --no-pager
+
+  scan_js:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+
   test:
     runs-on: ubuntu-latest
-    env:
-      CI: true
-      RAILS_ENV: test
 
     steps:
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y google-chrome-stable curl libjemalloc2 libvips sqlite3
 
       - name: Checkout code
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2.2'
           bundler-cache: true
-      
-      - name: Set correct permissions
-        run: |
-          chmod +x bin/rails
-          chmod +x bin/bundle
-      
+
       - name: Prepare test database
         env:
           RAILS_ENV: test
-        run: |
-          bundle exec rails db:test:prepare
-          bundle exec rails db:schema:load
+        run: bin/rails db:test:prepare
 
       - name: Start Rails server
         env:
           RAILS_ENV: test
         run: |
-          bundle exec rails server -e test -b 0.0.0.0 &
+          bin/rails server -e test -b 0.0.0.0 &
           sleep 5
-      
+
       - name: Run tests
         env:
           RAILS_ENV: test
-        run: bundle exec rails test test:system
+        run: bin/rails test test:system
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
@@ -71,57 +93,51 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/tmp/screenshots
 
-      - name: Complete job
-        run: echo "Test job completed successfully"
+---
+name: Deploy to AWS EC2
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
   deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    env:
-      CI: true
-      RAILS_ENV: production
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Configure SSH
+      - name: Set up SSH Key
         env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add - <<< "${{ secrets.EC2_SSH_KEY }}"
-          ssh-keyscan -H ${{ secrets.EC2_ELASTIC_IP }} >> ~/.ssh/known_hosts 2>/dev/null
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_ELASTIC_IP }} >> ~/.ssh/known_hosts
 
       - name: Test SSH Connection
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
             
-            # Create app directory if it doesn't exist
-            sudo mkdir -p /home/ubuntu/app
-            
-            # Update system packages
+            # Update system packages and install required dependencies
             sudo apt-get update -y
             sudo apt-get install -y ruby-dev build-essential libssl-dev zlib1g-dev
 
-            # Navigate to app directory
+            # Navigate to the application directory
             cd /home/ubuntu/app
 
-            # Ensure proper ownership
+            # Ensure proper ownership of the directory and its contents
             sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 
-            # Clean up existing bundle
+            # Clean up existing bundle directory to fix permissions
             sudo rm -rf vendor/bundle
 
             # Clone repository if it doesn't exist, otherwise pull latest changes
@@ -131,32 +147,28 @@ jobs:
               git pull origin main
             fi
 
-            # Set correct permissions
-            chmod +x bin/rails
-            chmod +x bin/bundle
+            # Ensure Bundler is installed
+            if ! command -v bundle &> /dev/null; then
+              echo "Installing Bundler..."
+              sudo gem install bundler --no-document
+            fi
 
-            # Install dependencies
+            # Install application dependencies
             bundle install --jobs=4
 
-            # Stop any running servers
-            sudo systemctl stop puma || true
-            pkill -f puma || true
+            # Run security checks and linters
+            bundle exec bundle audit --update
+            bundle exec brakeman -q -w2
+            bundle exec rubocop --autocorrect-all
 
-            # Run migrations
+            # Run database migrations
             RAILS_ENV=production bundle exec rails db:migrate
 
-            # Start the server
-            sudo systemctl start puma
-            
+            # Restart the server
+            sudo systemctl restart puma
+
             echo "Deployment Complete!"
           EOF
 
-      - name: Verify Deployment
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
-          echo "Verifying deployment..."
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "systemctl status puma"
-
-      - name: Complete job
-        run: echo "Deploy job completed successfully"
+      - name: Clean up
+        run: rm -f ~/.ssh/id_rsa
