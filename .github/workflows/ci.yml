@@ -86,29 +86,37 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
 
-      - name: Debug SSH Setup
+      - name: Setup SSH key
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          SSH_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          echo "Setting up SSH directory..."
+          echo "Setting up SSH..."
           mkdir -p ~/.ssh
-          echo "Setting SSH key permissions..."
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo "Adding host key..."
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          echo "Checking SSH key..."
+          echo "$SSH_KEY" > ~/.ssh/key-0ad7a87d4cc1dd824.pem
+          chmod 600 ~/.ssh/key-0ad7a87d4cc1dd824.pem
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          echo "SSH key setup complete"
           ls -la ~/.ssh/
-          echo "Testing SSH connection..."
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} echo "SSH test successful"
 
       - name: Deploy to EC2
-        if: success()
+        env:
+          SSH_KEY: key-0ad7a87d4cc1dd824.pem
+          SSH_HOST: ${{ secrets.EC2_HOST }}
+          SSH_USER: ubuntu
         run: |
           echo "Starting deployment..."
-          # Deploy application with detailed output
-          rsync -avz --progress --exclude='.git*' \
-                    --exclude='node_modules' \
-                    --exclude='tmp' \
-                    ./ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+          # Test SSH connection
+          ssh -i ~/.ssh/$SSH_KEY $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"
           
-          echo "Running setup script..."
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
+          # Deploy application with progress
+          rsync -avz --progress \
+                --exclude='.git*' \
+                --exclude='node_modules' \
+                --exclude='tmp' \
+                -e "ssh -i ~/.ssh/$SSH_KEY" \
+                ./ $SSH_USER@$SSH_HOST:/home/$SSH_USER/app/
+          
+          # Run setup script
+          ssh -i ~/.ssh/$SSH_KEY $SSH_USER@$SSH_HOST 'cd /home/$SSH_USER/app && chmod +x setup-ec2.sh && ./setup-ec2.sh'
