@@ -40,22 +40,29 @@ jobs:
           ruby-version: '3.2.2'
           bundler-cache: true
       
+      - name: Set correct permissions
+        run: |
+          chmod +x bin/rails
+          chmod +x bin/bundle
+      
       - name: Prepare test database
         env:
           RAILS_ENV: test
-        run: bin/rails db:test:prepare
+        run: |
+          bundle exec rails db:test:prepare
+          bundle exec rails db:schema:load
 
       - name: Start Rails server
         env:
           RAILS_ENV: test
         run: |
-          bin/rails server -e test -b 0.0.0.0 &
+          bundle exec rails server -e test -b 0.0.0.0 &
           sleep 5
       
       - name: Run tests
         env:
           RAILS_ENV: test
-        run: bin/rails test test:system
+        run: bundle exec rails test test:system
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
@@ -112,6 +119,10 @@ jobs:
 
             # Pull latest changes
             git pull origin main
+
+            # Set correct permissions
+            chmod +x bin/rails
+            chmod +x bin/bundle
 
             # Install dependencies
             bundle install --jobs=4
