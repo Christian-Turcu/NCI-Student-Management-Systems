@@ -27,11 +27,21 @@ jobs:
     env:
       CI: true
       RAILS_ENV: test
+      AWS_DEFAULT_REGION: us-east-1
 
     steps:
     # Checks out repository code
     - uses: actions/checkout@v3
     
+    # Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        aws-region: us-east-1
+
     # Sets up Ruby environment
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
@@ -71,16 +81,6 @@ jobs:
         CI: true
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
         SELENIUM_HEADLESS: true
-
-    # Set up AWS credentials
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-        aws-region: us-east-1
-        mask-aws-account-id: true
 
     # Copy files to EC2
     - name: Copy files to EC2
