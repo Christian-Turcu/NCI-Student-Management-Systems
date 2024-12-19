@@ -28,7 +28,10 @@ jobs:
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
+          # Remove quotes from master key
+          MASTER_KEY=$(echo -n $RAILS_MASTER_KEY)
+          
+          ssh -o StrictHostKeyChecking=no -i myKey.pem ubuntu@${{ secrets.EC2_ELASTIC_IP }} "MASTER_KEY='$MASTER_KEY' bash -s" << 'EOF'
             set -e
             
             # Update system packages and install required dependencies
@@ -51,10 +54,18 @@ jobs:
 
             # Set up Rails environment and master key
             export RAILS_ENV=production
-            export RAILS_MASTER_KEY='${RAILS_MASTER_KEY}'
+            export RAILS_MASTER_KEY="$MASTER_KEY"
+
+            # Verify the master key
+            echo "Master key length: ${#MASTER_KEY}"
+            
+            # Set up master key file
             mkdir -p config
-            echo -n "${RAILS_MASTER_KEY}" > config/master.key
+            echo -n "$MASTER_KEY" > config/master.key
             chmod 600 config/master.key
+
+            # Verify the file
+            echo "Master key file length: $(wc -c < config/master.key)"
 
             # Install Bundler
             sudo gem install bundler -v 2.5.23
@@ -65,16 +76,16 @@ jobs:
             bundle install --quiet
 
             # Database setup
-            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails db:migrate
+            bundle exec rails db:migrate
 
             # Precompile assets
-            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails assets:precompile
+            bundle exec rails assets:precompile
 
             # Kill any existing Rails server
             pkill -f "rails server" || true
 
             # Start the Rails server
-            RAILS_ENV=production RAILS_MASTER_KEY="${RAILS_MASTER_KEY}" bundle exec rails server -d -b 0.0.0.0 -p 3000
+            bundle exec rails server -d -b 0.0.0.0 -p 3000
 
             echo "Deployment Complete!"
           EOF
