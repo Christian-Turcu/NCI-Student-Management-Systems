@@ -93,20 +93,23 @@ jobs:
           mkdir -p ~/.ssh
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.EC2_SSH_KEY }}"
-          echo "${{ secrets.EC2_HOST }} $(ssh-keyscan ${{ secrets.EC2_HOST }} 2>/dev/null | grep -m 1 ecdsa)" >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.EC2_ELASTIC_IP }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Test SSH Connection
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "echo Connected Successfully!"
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "echo Connected Successfully!"
 
       - name: Deploy to EC2
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} << 'EOF'
             set -e
+            
+            # Create app directory if it doesn't exist
+            sudo mkdir -p /home/ubuntu/app
             
             # Update system packages
             sudo apt-get update -y
@@ -121,8 +124,12 @@ jobs:
             # Clean up existing bundle
             sudo rm -rf vendor/bundle
 
-            # Pull latest changes
-            git pull origin main
+            # Clone repository if it doesn't exist, otherwise pull latest changes
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Christian-Turcu/NCI-Student-Management-Systems.git .
+            else
+              git pull origin main
+            fi
 
             # Set correct permissions
             chmod +x bin/rails
@@ -149,7 +156,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           echo "Verifying deployment..."
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "systemctl status puma"
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_ELASTIC_IP }} "systemctl status puma"
 
       - name: Complete job
         run: echo "Deploy job completed successfully"
