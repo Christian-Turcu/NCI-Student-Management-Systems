@@ -59,29 +59,23 @@ jobs:
         RAILS_ENV: test
         CI: true
 
-    # Print SSH Key Info
-    - name: Print SSH Key Info
+    # Setup SSH
+    - name: Setup SSH
       run: |
-        echo "Length of SSH key is: $(echo "${{ secrets.EC2_SSH_KEY }}" | wc -c) characters"
-        echo "First few characters: $(echo "${{ secrets.EC2_SSH_KEY }}" | head -c 30)..."
-        echo "SSH key format check:"
-        echo "${{ secrets.EC2_SSH_KEY }}" | grep -E "^-----BEGIN .* PRIVATE KEY-----"
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        echo "Testing SSH connection..."
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SSH connection successful'"
 
-    # Deploy to EC2
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USERNAME }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        debug: true
-        script: |
-          echo "Current directory: $(pwd)"
-          echo "Current user: $(whoami)"
-          mkdir -p ~/app
-          cd ~/app
-          echo "Test file creation" > test.txt
-          ls -la
+    # Deploy using SSH
+    - name: Deploy using SSH
+      if: success()
+      run: |
+        echo "Starting deployment..."
+        scp -i ~/.ssh/id_rsa -r -v ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/app/
+        ssh -i ~/.ssh/id_rsa -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "cd /home/${{ secrets.EC2_USERNAME }}/app && chmod +x setup-ec2.sh setup-security-group.sh && ./setup-security-group.sh && ./setup-ec2.sh"
 
   deploy:
     needs: test
